@@ -8,7 +8,8 @@
     "target": "es5",
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    "types": ["phaser"],
-    "strictNullChecks": true
+    "types": ["phaser", "jest"],
+    "strictNullChecks": true,
+    "moduleResolution": "node"
   }
 }
