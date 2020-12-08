@@ -41,9 +41,9 @@ test('getMatrix returns expected ouput with right rotation', () => {
 test('getMatrix returns expected ouput with 180 rotation', () => {
   const matrix = Tetromino.getMatrix(ShapeId.T, 180)
   expect(matrix).toEqual([
-    [0, 7, 0],
-    [7, 7, 7],
     [0, 0, 0],
+    [7, 7, 7],
+    [0, 7, 0],
   ])
 })
 
