@@ -1,6 +1,6 @@
 {
-  "name": "phaser3-typescript-webpack-boilerplate",
-  "version": "1.0.0",
+  "name": "tetris",
+  "version": "0.1.0",
   "description": "A boilerplate project for creating games with Phaser3, Typescript and Webpack 5",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "test": "jest"
   },
   "author": "Jed Hastwell",
-  "repository": "https://github.com/jedhastwell/phaser3-typescript-webpack-boilerplate.git",
+  "repository": "",
   "license": "MIT",
   "devDependencies": {
     "@types/html-webpack-plugin": "^3.2.4",
