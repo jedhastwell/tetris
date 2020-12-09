@@ -30,8 +30,8 @@ class MatrixDisplay extends Phaser.GameObjects.Graphics {
     this.clear()
     this.lineStyle(this.gridStroke, Colors.grid)
     this.fillStyle(Colors.background)
-    this.fillRect(0, 0, matrix.length * this.cellWidth, matrix[0].length * this.cellHeight)
-    this.strokeRect(0, 0, matrix.length * this.cellWidth, matrix[0].length * this.cellHeight)
+    this.fillRect(0, 0, matrix[0].length * this.cellWidth, matrix.length * this.cellHeight)
+    this.strokeRect(0, 0, matrix[0].length * this.cellWidth, matrix.length * this.cellHeight)
     matrix.forEach((row, r) => {
       row.forEach((value, c) => {
         if (value === 0) {
