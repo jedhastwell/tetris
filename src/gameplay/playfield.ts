@@ -10,11 +10,15 @@ interface PlayfieldConfig {
   queueSize?: number
   dropFrequency?: number
   shapeProvider?: ShapeProvider
+  lockDelay?: number
+  maxLockDelayResets?: number
 }
 
 const Defaults = {
   QUEUE_SIZE: 1,
   DROP_FREQUENCY: 800,
+  LOCK_DELAY: 500,
+  MAX_LOCK_DELAY_RESETS: 10,
 }
 
 class Playfield {
@@ -28,10 +32,14 @@ class Playfield {
   public held: ShapeId | null
   public canHold: boolean
   public dropFrequency: number
+  public lockDelay: number
+  public maxLockDelayResets: number
   public toppedOut: boolean
 
   private matrix: Matrix
   private nextStep: number
+  private willLockPrevious: boolean
+  private lockDelayResets: number
 
   constructor({
     cols,
@@ -39,6 +47,8 @@ class Playfield {
     firstVisibleRow,
     dropFrequency = Defaults.DROP_FREQUENCY,
     queueSize = Defaults.QUEUE_SIZE,
+    lockDelay = Defaults.LOCK_DELAY,
+    maxLockDelayResets = Defaults.MAX_LOCK_DELAY_RESETS,
     shapeProvider = new Randomizer(),
   }: PlayfieldConfig) {
     this.cols = cols
@@ -50,9 +60,12 @@ class Playfield {
     this.held = null
     this.shapeProvider = shapeProvider
     this.canHold = true
+    this.lockDelay = lockDelay
+    this.maxLockDelayResets = maxLockDelayResets
 
     this.toppedOut = false
     this.nextStep = this.dropFrequency = dropFrequency
+    this.lockDelayResets = 0
     this.seedQueue(queueSize)
     this.spawn()
   }
@@ -76,8 +89,11 @@ class Playfield {
     } else {
       // New tetrominoes spawn above the play field then immediately drop below if possible
       this.spawnDrop()
-      this.resetNextStep()
 
+      this.resetNextStep()
+      this.resetLockDelays()
+
+      this.updatedTetromino()
       this.canHold = true
     }
   }
@@ -89,8 +105,24 @@ class Playfield {
     }
   }
 
+  resetLockDelays(): void {
+    this.lockDelayResets = 0
+    this.willLockPrevious = false
+  }
+
+  updatedTetromino(): void {
+    const willLock = !this.canMove(Tetromino.Moves.DOWN)
+    if (willLock && this.lockDelayResets < this.maxLockDelayResets) {
+      this.lockDelayResets++
+      this.nextStep = Math.max(this.nextStep, this.lockDelay)
+    } else if (!willLock && this.willLockPrevious) {
+      this.nextStep = Math.min(this.nextStep, this.dropFrequency)
+    }
+    this.willLockPrevious = willLock
+  }
+
   hold(): void {
-    if (this.canHold) {
+    if (!this.toppedOut && this.canHold) {
       const newHold = this.tetromino.shapeId
       if (this.held) {
         this.spawn(this.held)
@@ -166,9 +198,10 @@ class Playfield {
   }
 
   tryRotate(rotation: number): boolean {
-    const obstructed = this.obstructed(this.tetromino.peekPositions(rotation))
+    const obstructed = this.toppedOut || this.obstructed(this.tetromino.peekPositions(rotation))
     if (!obstructed) {
       this.tetromino.rotate(rotation)
+      this.updatedTetromino()
     }
     return obstructed
   }
@@ -182,14 +215,14 @@ class Playfield {
   }
 
   canMove(movement: Point): boolean {
-    const points = this.tetromino.peekPositions(0, movement.x, movement.y)
-    return !this.obstructed(points)
+    return !this.obstructed(this.tetromino.peekPositions(0, movement.x, movement.y))
   }
 
   tryMove(movement: Point): boolean {
-    const canMove = this.canMove(movement)
+    const canMove = !this.toppedOut && this.canMove(movement)
     if (canMove) {
       this.tetromino.move(movement)
+      this.updatedTetromino()
     }
     return canMove
   }
@@ -199,8 +232,12 @@ class Playfield {
   }
 
   hardDrop(): void {
-    while (this.tryMove(Tetromino.Moves.DOWN)) {}
-    this.lock()
+    if (!this.toppedOut) {
+      while (this.canMove(Tetromino.Moves.DOWN)) {
+        this.tetromino.move(Tetromino.Moves.DOWN)
+      }
+      this.lock()
+    }
   }
 
   topOut(): void {
