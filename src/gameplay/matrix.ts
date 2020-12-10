@@ -1,5 +1,5 @@
 import { Utils } from 'phaser'
-import { ShapeId } from '../types'
+import { ShapeId, Point } from '../types'
 
 export type Matrix = (ShapeId | 0)[][]
 
@@ -14,6 +14,13 @@ export const Matrix = {
 
   rotate(matrix: Matrix, rotation: number): Matrix {
     return Utils.Array.Matrix.RotateMatrix(matrix, rotation)
+  },
+
+  setValues(matrix: Matrix, points: Point[], value: ShapeId | 0): Matrix {
+    points
+      .filter((p) => p.y >= 0 && p.y < matrix.length && p.x >= 0 && p.x <= matrix[0].length)
+      .forEach((p) => (matrix[p.y][p.x] = value))
+    return matrix
   },
 
   getLeadingEmptyRowCount(matrix: Matrix): number {

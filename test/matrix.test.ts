@@ -66,3 +66,9 @@ test('getLeadingEmptyRowCount returns expected value with empty top rows', () =>
   ])
   expect(count).toEqual(2)
 })
+
+test('setValues updates matrix in place', () => {
+  const matrix = Matrix.create(4, 4)
+  Matrix.setValues(matrix, [{ x: 1, y: 2 }], 1)
+  expect(matrix[2][1]).toEqual(1)
+})
