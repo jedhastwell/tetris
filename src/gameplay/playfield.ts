@@ -6,10 +6,12 @@ interface PlayfieldConfig {
   cols: number
   rows: number
   firstVisibleRow: number
+  queueSize?: number
   dropFrequency?: number
 }
 
 const Defaults = {
+  QUEUE_SIZE: 1,
   DROP_FREQUENCY: 800,
 }
 
@@ -17,6 +19,7 @@ class Playfield {
   readonly cols: number
   readonly rows: number
   readonly firstVisibleRow: number
+  readonly queue: ShapeId[]
 
   public tetromino: Tetromino
   public dropFrequency: number
@@ -30,15 +33,27 @@ class Playfield {
     rows,
     firstVisibleRow,
     dropFrequency = Defaults.DROP_FREQUENCY,
+    queueSize = Defaults.QUEUE_SIZE,
   }: PlayfieldConfig) {
     this.cols = cols
     this.rows = rows
     this.firstVisibleRow = firstVisibleRow
     this.matrix = Matrix.create(cols, rows)
+    this.queue = []
 
     this.toppedOut = false
     this.nextStep = this.dropFrequency = dropFrequency
+    this.seedQueue(queueSize)
     this.spawn()
+  }
+
+  seedQueue(size: number): void {
+    this.queue.push(...Array.from({ length: size }, Tetromino.randomShapeId))
+  }
+
+  spawnFromQueue(): void {
+    this.queue.push(Tetromino.randomShapeId())
+    this.spawn(this.queue.splice(0, 1)[0])
   }
 
   spawn(shapeId?: ShapeId): void {
@@ -70,7 +85,7 @@ class Playfield {
     } else {
       Matrix.setValues(this.matrix, points, this.tetromino.shapeId)
       this.clearLines()
-      this.spawn()
+      this.spawnFromQueue()
     }
   }
 
