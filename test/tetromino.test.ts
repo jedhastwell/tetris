@@ -60,32 +60,32 @@ test('randomShapeId returns values within expected range', () => {
   expect(testValues).toEqual(Array(7).fill(true))
 })
 
-test('alignCenterTopTo moves I shape to expected location', () => {
+test('moveToSpawnPostion moves I shape to expected location', () => {
   const tetromino = new Tetromino(ShapeId.I)
-  tetromino.alignCenterTopTo(5, 0)
+  tetromino.moveToSpawnPostion(5, 0)
   expect(tetromino.x).toEqual(3)
   expect(tetromino.y).toEqual(-1)
 })
 
-test('alignCenterTopTo moves L shape to expected location', () => {
+test('moveToSpawnPostion moves L shape to expected location', () => {
   const tetromino = new Tetromino(ShapeId.L)
-  tetromino.alignCenterTopTo(5, 5)
+  tetromino.moveToSpawnPostion(5, 5)
   expect(tetromino.x).toEqual(3)
-  expect(tetromino.y).toEqual(5)
+  expect(tetromino.y).toEqual(4)
 })
 
-test('alignCenterTopTo moves rotated J shape to expected location', () => {
-  const tetromino = new Tetromino(ShapeId.J, 90)
-  tetromino.alignCenterTopTo(5, 1)
+test('moveToSpawnPostion moves rotated S shape to expected location', () => {
+  const tetromino = new Tetromino(ShapeId.S, 90)
+  tetromino.moveToSpawnPostion(5, 1)
   expect(tetromino.x).toEqual(3)
-  expect(tetromino.y).toEqual(1)
+  expect(tetromino.y).toEqual(0)
 })
 
-test('alignCenterTopTo moves O shape to expected location', () => {
+test('moveToSpawnPostion moves O shape to expected location', () => {
   const tetromino = new Tetromino(ShapeId.O, 0, 10, 10)
-  tetromino.alignCenterTopTo(1, 1)
+  tetromino.moveToSpawnPostion(1, 1)
   expect(tetromino.x).toEqual(0)
-  expect(tetromino.y).toEqual(1)
+  expect(tetromino.y).toEqual(0)
 })
 
 test('rotate increments current rotation value', () => {
@@ -99,4 +99,13 @@ test('move increments current position', () => {
   tetromino.move({ x: 2, y: 2 })
   expect(tetromino.x).toEqual(7)
   expect(tetromino.y).toEqual(12)
+})
+
+test('getPositions on instance returns expected values', () => {
+  const tetromino = new Tetromino(ShapeId.Z, 0, 5, 5)
+  const points = tetromino.getPositions()
+  expect(points).toContainEqual({ x: 5, y: 5 })
+  expect(points).toContainEqual({ x: 6, y: 5 })
+  expect(points).toContainEqual({ x: 6, y: 6 })
+  expect(points).toContainEqual({ x: 7, y: 6 })
 })

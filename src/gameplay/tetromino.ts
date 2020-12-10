@@ -24,10 +24,9 @@ class Tetromino {
     return points
   }
 
-  alignCenterTopTo(x: number, y: number): void {
-    const matrix = Shapes[this.shapeId]
-    this.x = x - Math.ceil(matrix[0].length / 2)
-    this.y = y - Matrix.getLeadingEmptyRowCount(matrix)
+  moveToSpawnPostion(x: number, y: number): void {
+    this.x = x - (this.shapeId === ShapeId.O ? 1 : 2)
+    this.y = y - 1
   }
 
   rotate(rotation: number): void {
