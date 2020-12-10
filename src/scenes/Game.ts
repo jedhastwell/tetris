@@ -9,6 +9,7 @@ const PREVIEW_COUNT = 3
 class Game extends Phaser.Scene {
   private debugMatrix: MatrixDisplay
   private debugQueue: MatrixDisplay
+  private debugHold: MatrixDisplay
   private playfield: Playfield
 
   constructor() {
@@ -20,8 +21,10 @@ class Game extends Phaser.Scene {
   create(): void {
     this.debugMatrix = new MatrixDisplay(this, 10, 10, 20, 20, 1)
     this.debugQueue = new MatrixDisplay(this, 220, 10, 15, 15, 1)
+    this.debugHold = new MatrixDisplay(this, 220, 155, 15, 15, 1)
     this.add.existing(this.debugMatrix)
     this.add.existing(this.debugQueue)
+    this.add.existing(this.debugHold)
 
     this.playfield = new Playfield({
       cols: 10,
@@ -42,6 +45,14 @@ class Game extends Phaser.Scene {
     this.input.keyboard.addKey('UP', true).on('down', this.playfield.rotateRight, this.playfield)
     this.input.keyboard.addKey('X', true).on('down', this.playfield.rotateRight, this.playfield)
     this.input.keyboard.addKey('Z', true).on('down', this.playfield.rotateLeft, this.playfield)
+    this.input.keyboard.addKey('C', true).on('down', this.playfield.hold, this.playfield)
+  }
+
+  updateHold(): void {
+    const matrix = this.playfield.held
+      ? Tetromino.getMatrix(this.playfield.held)
+      : Matrix.create(3, 3)
+    this.debugHold.draw(matrix)
   }
 
   updatePreview(): void {
@@ -69,6 +80,7 @@ class Game extends Phaser.Scene {
     output.splice(0, 8)
     this.debugMatrix.draw(output)
     this.updatePreview()
+    this.updateHold()
   }
 }
 

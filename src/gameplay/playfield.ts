@@ -22,6 +22,8 @@ class Playfield {
   readonly queue: ShapeId[]
 
   public tetromino: Tetromino
+  public held: ShapeId | null
+  public canHold: boolean
   public dropFrequency: number
   public toppedOut: boolean
 
@@ -40,6 +42,8 @@ class Playfield {
     this.firstVisibleRow = firstVisibleRow
     this.matrix = Matrix.create(cols, rows)
     this.queue = []
+    this.held = null
+    this.canHold = true
 
     this.toppedOut = false
     this.nextStep = this.dropFrequency = dropFrequency
@@ -67,6 +71,8 @@ class Playfield {
       // New tetrominoes spawn above the play field then immediately drop below if possible
       this.spawnDrop()
       this.resetNextStep()
+
+      this.canHold = true
     }
   }
 
@@ -74,6 +80,19 @@ class Playfield {
     let points = this.tetromino.getPositions()
     while (points.some((p) => p.y < this.firstVisibleRow) && this.tryMove(Tetromino.Moves.DOWN)) {
       points = this.tetromino.getPositions()
+    }
+  }
+
+  hold(): void {
+    if (this.canHold) {
+      const newHold = this.tetromino.shapeId
+      if (this.held) {
+        this.spawn(this.held)
+      } else {
+        this.spawnFromQueue()
+      }
+      this.held = newHold
+      this.canHold = false
     }
   }
 
