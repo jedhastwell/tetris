@@ -16,10 +16,16 @@ export const Matrix = {
     return Utils.Array.Matrix.RotateMatrix(matrix, rotation)
   },
 
-  setValues(matrix: Matrix, points: Point[], value: ShapeId | 0): Matrix {
+  setValues(matrix: Matrix, points: Point[], value: ShapeId | 0, xOffset = 0, yOffset = 0): Matrix {
     points
-      .filter((p) => p.y >= 0 && p.y < matrix.length && p.x >= 0 && p.x <= matrix[0].length)
-      .forEach((p) => (matrix[p.y][p.x] = value))
+      .filter(
+        (p) =>
+          p.y + yOffset >= 0 &&
+          p.y + yOffset < matrix.length &&
+          p.x + xOffset >= 0 &&
+          p.x + xOffset <= matrix[0].length,
+      )
+      .forEach((p) => (matrix[p.y + yOffset][p.x + xOffset] = value))
     return matrix
   },
 

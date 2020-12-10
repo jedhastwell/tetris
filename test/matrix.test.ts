@@ -72,3 +72,9 @@ test('setValues updates matrix in place', () => {
   Matrix.setValues(matrix, [{ x: 1, y: 2 }], 1)
   expect(matrix[2][1]).toEqual(1)
 })
+
+test('setValues with offset updates expected positions', () => {
+  const matrix = Matrix.create(4, 4)
+  Matrix.setValues(matrix, [{ x: 1, y: 2 }], 1, 1, -1)
+  expect(matrix[1][2]).toEqual(1)
+})
