@@ -111,6 +111,22 @@ class Playfield {
     return matrix
   }
 
+  tryRotate(rotation: number): boolean {
+    const obstructed = this.obstructed(this.tetromino.peekPositions(rotation))
+    if (!obstructed) {
+      this.tetromino.rotate(rotation)
+    }
+    return obstructed
+  }
+
+  rotateLeft(): boolean {
+    return this.tryRotate(Tetromino.Rotations.LEFT)
+  }
+
+  rotateRight(): boolean {
+    return this.tryRotate(Tetromino.Rotations.RIGHT)
+  }
+
   canMove(movement: Point): boolean {
     const points = this.tetromino.peekPositions(0, movement.x, movement.y)
     return !this.obstructed(points)

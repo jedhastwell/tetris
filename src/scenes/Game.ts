@@ -30,8 +30,11 @@ class Game extends Phaser.Scene {
         .on('down', () => this.playfield.tryMove((<any>Tetromino.Moves)[key]))
     })
 
-    this.input.keyboard.addKey('DOWN', true).on('down', () => this.playfield.softDrop())
-    this.input.keyboard.addKey('SPACE', true).on('down', () => this.playfield.hardDrop())
+    this.input.keyboard.addKey('DOWN', true).on('down', this.playfield.softDrop, this.playfield)
+    this.input.keyboard.addKey('SPACE', true).on('down', this.playfield.hardDrop, this.playfield)
+    this.input.keyboard.addKey('UP', true).on('down', this.playfield.rotateRight, this.playfield)
+    this.input.keyboard.addKey('X', true).on('down', this.playfield.rotateRight, this.playfield)
+    this.input.keyboard.addKey('Z', true).on('down', this.playfield.rotateLeft, this.playfield)
   }
 
   update(time: number, delta: number): void {
