@@ -23,12 +23,15 @@ class Game extends Phaser.Scene {
       firstVisibleRow: 8,
     })
 
-    const keys = ['LEFT', 'RIGHT', 'DOWN']
+    const keys = ['LEFT', 'RIGHT']
     keys.forEach((key) => {
       this.input.keyboard
         .addKey(key, true)
         .on('down', () => this.playfield.tryMove((<any>Tetromino.Moves)[key]))
     })
+
+    this.input.keyboard.addKey('DOWN', true).on('down', () => this.playfield.softDrop())
+    this.input.keyboard.addKey('SPACE', true).on('down', () => this.playfield.hardDrop())
   }
 
   update(time: number, delta: number): void {

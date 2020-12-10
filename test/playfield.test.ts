@@ -53,3 +53,17 @@ test('Time to next drop is reset after a spawn', () => {
   playfield.spawn()
   expect((<any>playfield).nextStep).toEqual(2000)
 })
+
+test('hardDrop moves tetromino to the bottom and locks it in place', () => {
+  const playfield = new Playfield({
+    cols: 10,
+    rows: 24,
+    firstVisibleRow: 4,
+  })
+  playfield.spawn(ShapeId.I)
+  playfield.hardDrop()
+
+  const matrix = playfield.getMatrix(false)
+
+  expect(matrix[23]).toEqual([0, 0, 0, 1, 1, 1, 1, 0, 0, 0])
+})

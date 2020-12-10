@@ -124,6 +124,15 @@ class Playfield {
     return canMove
   }
 
+  softDrop(): void {
+    this.tryMove(Tetromino.Moves.DOWN)
+  }
+
+  hardDrop(): void {
+    while (this.tryMove(Tetromino.Moves.DOWN)) {}
+    this.lock()
+  }
+
   topOut(): void {
     this.toppedOut = true
   }
