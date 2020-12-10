@@ -56,6 +56,16 @@ class Game extends Phaser.Scene {
   update(time: number, delta: number): void {
     this.playfield.update(delta)
     const output = this.playfield.getMatrix(true)
+
+    this.playfield
+      .getGhost()
+      .getPositions()
+      .forEach((p) => {
+        if (output[p.y][p.x] === 0) {
+          output[p.y][p.x] = -1
+        }
+      })
+
     output.splice(0, 8)
     this.debugMatrix.draw(output)
     this.updatePreview()

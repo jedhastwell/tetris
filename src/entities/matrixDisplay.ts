@@ -5,6 +5,7 @@ import { Matrix } from '../gameplay/matrix'
 const Colors = {
   grid: 0x4c4b4c,
   background: 0x262626,
+  [-1]: 0x444444,
   [ShapeId.I]: 0x2cade2,
   [ShapeId.J]: 0x005a9d,
   [ShapeId.L]: 0xf89622,

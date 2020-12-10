@@ -126,6 +126,20 @@ class Playfield {
     return matrix
   }
 
+  getGhost(): Tetromino {
+    const ghost = new Tetromino(
+      this.tetromino.shapeId,
+      this.tetromino.rotation,
+      this.tetromino.x,
+      this.tetromino.y,
+    )
+
+    while (!this.obstructed(ghost.peekPositions(0, 0, 1))) {
+      ghost.move(Tetromino.Moves.DOWN)
+    }
+    return ghost
+  }
+
   tryRotate(rotation: number): boolean {
     const obstructed = this.obstructed(this.tetromino.peekPositions(rotation))
     if (!obstructed) {
