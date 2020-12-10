@@ -12,3 +12,7 @@ export interface Point {
   x: number
   y: number
 }
+
+export interface ShapeProvider {
+  next(): ShapeId
+}

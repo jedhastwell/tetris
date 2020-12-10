@@ -1,6 +1,7 @@
-import { ShapeId, Point } from '../types'
+import { ShapeId, ShapeProvider, Point } from '../types'
 import { Matrix } from './matrix'
 import Tetromino from './tetromino'
+import Randomizer from './randomizer'
 
 interface PlayfieldConfig {
   cols: number
@@ -8,6 +9,7 @@ interface PlayfieldConfig {
   firstVisibleRow: number
   queueSize?: number
   dropFrequency?: number
+  shapeProvider?: ShapeProvider
 }
 
 const Defaults = {
@@ -20,6 +22,7 @@ class Playfield {
   readonly rows: number
   readonly firstVisibleRow: number
   readonly queue: ShapeId[]
+  readonly shapeProvider: ShapeProvider
 
   public tetromino: Tetromino
   public held: ShapeId | null
@@ -36,13 +39,16 @@ class Playfield {
     firstVisibleRow,
     dropFrequency = Defaults.DROP_FREQUENCY,
     queueSize = Defaults.QUEUE_SIZE,
+    shapeProvider = new Randomizer(),
   }: PlayfieldConfig) {
     this.cols = cols
     this.rows = rows
     this.firstVisibleRow = firstVisibleRow
+
     this.matrix = Matrix.create(cols, rows)
     this.queue = []
     this.held = null
+    this.shapeProvider = shapeProvider
     this.canHold = true
 
     this.toppedOut = false
@@ -52,16 +58,16 @@ class Playfield {
   }
 
   seedQueue(size: number): void {
-    this.queue.push(...Array.from({ length: size }, Tetromino.randomShapeId))
+    this.queue.push(...Array.from({ length: size }, () => this.shapeProvider.next()))
   }
 
   spawnFromQueue(): void {
-    this.queue.push(Tetromino.randomShapeId())
+    this.queue.push(this.shapeProvider.next())
     this.spawn(this.queue.splice(0, 1)[0])
   }
 
   spawn(shapeId?: ShapeId): void {
-    this.tetromino = new Tetromino(shapeId || Tetromino.randomShapeId())
+    this.tetromino = new Tetromino(shapeId || this.shapeProvider.next())
     this.tetromino.moveToSpawnPostion(Math.floor(this.cols / 2), this.firstVisibleRow - 1)
 
     // Game over occurs if the new tetromino is obstructed when spawned
