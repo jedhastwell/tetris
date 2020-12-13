@@ -198,12 +198,21 @@ class Playfield {
   }
 
   tryRotate(rotation: number): boolean {
-    const obstructed = this.toppedOut || this.obstructed(this.tetromino.peekPositions(rotation))
-    if (!obstructed) {
-      this.tetromino.rotate(rotation)
-      this.updatedTetromino()
+    if (!this.toppedOut) {
+      const kickSeries = this.tetromino.getKickSeries(rotation)
+
+      const offset = kickSeries.find(
+        (p) => !this.obstructed(this.tetromino.peekPositions(rotation, p.x, p.y)),
+      )
+
+      if (!!offset) {
+        this.tetromino.rotate(rotation)
+        this.tetromino.move(offset)
+        this.updatedTetromino()
+        return true
+      }
     }
-    return obstructed
+    return false
   }
 
   rotateLeft(): boolean {

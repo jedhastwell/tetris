@@ -8,6 +8,13 @@ export enum ShapeId {
   T = 7,
 }
 
+export enum Orientation {
+  UP = 0,
+  LEFT = 1,
+  DOWN = 2,
+  RIGHT = 3,
+}
+
 export interface Point {
   x: number
   y: number

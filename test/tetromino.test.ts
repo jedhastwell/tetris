@@ -1,13 +1,14 @@
 import Tetromino from '../src/gameplay/tetromino'
-import { ShapeId } from '../src/types'
+import { Orientation, ShapeId } from '../src/types'
 
 test('getMatrix returns expected ouput for I shape', () => {
   const matrix = Tetromino.getMatrix(ShapeId.I)
   expect(matrix).toEqual([
-    [0, 0, 0, 0],
-    [1, 1, 1, 1],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
   ])
 })
 
@@ -63,7 +64,7 @@ test('randomShapeId returns values within expected range', () => {
 test('moveToSpawnPostion moves I shape to expected location', () => {
   const tetromino = new Tetromino(ShapeId.I)
   tetromino.moveToSpawnPostion(5, 0)
-  expect(tetromino.x).toEqual(3)
+  expect(tetromino.x).toEqual(2)
   expect(tetromino.y).toEqual(-1)
 })
 
@@ -83,8 +84,8 @@ test('moveToSpawnPostion moves rotated S shape to expected location', () => {
 
 test('moveToSpawnPostion moves O shape to expected location', () => {
   const tetromino = new Tetromino(ShapeId.O, 0, 10, 10)
-  tetromino.moveToSpawnPostion(1, 1)
-  expect(tetromino.x).toEqual(0)
+  tetromino.moveToSpawnPostion(5, 1)
+  expect(tetromino.x).toEqual(3)
   expect(tetromino.y).toEqual(0)
 })
 
