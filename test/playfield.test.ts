@@ -67,3 +67,21 @@ test('hardDrop moves tetromino to the bottom and locks it in place', () => {
 
   expect(matrix[23]).toEqual([0, 0, 0, 1, 1, 1, 1, 0, 0, 0])
 })
+
+test('rotating a J tetromino right 4 times with no obstruction maintains mino positions', () => {
+  const playfield = new Playfield({
+    cols: 10,
+    rows: 24,
+    firstVisibleRow: 4,
+  })
+  playfield.spawn(ShapeId.J)
+  const initialPositions = playfield.tetromino.getPositions()
+  playfield.rotateRight()
+  playfield.rotateRight()
+  playfield.rotateRight()
+  playfield.rotateRight()
+  const finalPositions = playfield.tetromino.getPositions()
+
+  expect(initialPositions).not.toBe(finalPositions)
+  expect(initialPositions).toEqual(finalPositions)
+})
