@@ -15,6 +15,12 @@ export enum Orientation {
   RIGHT = 3,
 }
 
+export enum TSpin {
+  NONE,
+  MINI,
+  FULL,
+}
+
 export interface Point {
   x: number
   y: number

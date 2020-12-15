@@ -29,6 +29,20 @@ export const Matrix = {
     return matrix
   },
 
+  pointObstructed(matrix: Matrix, point: Point, xOffset = 0, yOffset = 0): boolean {
+    return (
+      point.x + xOffset < 0 ||
+      point.x + xOffset >= matrix[0].length ||
+      point.y + yOffset < 0 ||
+      point.y + yOffset >= matrix.length ||
+      matrix[point.y + yOffset][point.x + xOffset] !== 0
+    )
+  },
+
+  obstructed(matrix: Matrix, points: Point[], xOffset = 0, yOffset = 0): boolean {
+    return points.some((p) => Matrix.pointObstructed(matrix, p, xOffset, yOffset))
+  },
+
   getLeadingEmptyRowCount(matrix: Matrix): number {
     return Math.max(
       0,

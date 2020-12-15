@@ -2,6 +2,7 @@ import { ShapeId, ShapeProvider, Point } from '../types'
 import { Matrix } from './matrix'
 import Tetromino from './tetromino'
 import Randomizer from './randomizer'
+import { getRotation } from './rules'
 
 interface PlayfieldConfig {
   cols: number
@@ -93,9 +94,9 @@ class Playfield {
       this.resetNextStep()
       this.resetLockDelays()
 
-      this.updatedTetromino()
       this.canHold = true
     }
+    this.updatedTetromino()
   }
 
   spawnDrop(): void {
@@ -165,14 +166,7 @@ class Playfield {
   }
 
   obstructed(points: Point[]): boolean {
-    return points.some(
-      (point) =>
-        point.x < 0 ||
-        point.x >= this.cols ||
-        point.y < 0 ||
-        point.y >= this.rows ||
-        this.matrix[point.y][point.x] !== 0,
-    )
+    return Matrix.obstructed(this.matrix, points)
   }
 
   getMatrix(includeTetromino?: boolean): Matrix {
@@ -184,12 +178,7 @@ class Playfield {
   }
 
   getGhost(): Tetromino {
-    const ghost = new Tetromino(
-      this.tetromino.shapeId,
-      this.tetromino.rotation,
-      this.tetromino.x,
-      this.tetromino.y,
-    )
+    const ghost = this.tetromino.clone()
 
     while (!this.obstructed(ghost.peekPositions(0, 0, 1))) {
       ghost.move(Tetromino.Moves.DOWN)
@@ -199,14 +188,10 @@ class Playfield {
 
   tryRotate(rotation: number): boolean {
     if (!this.toppedOut) {
-      const kickSeries = this.tetromino.getKickSeries(rotation)
+      const [rotate, offset] = getRotation(rotation, this.tetromino, this.matrix)
 
-      const offset = kickSeries.find(
-        (p) => !this.obstructed(this.tetromino.peekPositions(rotation, p.x, p.y)),
-      )
-
-      if (!!offset) {
-        this.tetromino.rotate(rotation)
+      if (rotate !== 0) {
+        this.tetromino.rotate(rotate)
         this.tetromino.move(offset)
         this.updatedTetromino()
         return true

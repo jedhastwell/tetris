@@ -28,23 +28,8 @@ class Tetromino {
     return points
   }
 
-  static getKickSeries(shapeId: ShapeId, fromRotation: number, toRotation: number): Point[] {
-    // Rotation logic follows the Super Rotation System: https://tetris.wiki/Super_Rotation_System
-    // This function returns a series of offset points that need to be tested and applied when
-    // rotating from one state to another.
-    const seriesA = OffsetData[shapeId][Tetromino.getOrientation(fromRotation)]
-    const seriesB = OffsetData[shapeId][Tetromino.getOrientation(toRotation)]
-
-    const kickSeries: Point[] = []
-
-    for (let i = 0; i < seriesA.length; i += 2) {
-      kickSeries.push({
-        x: seriesA[i] - seriesB[i],
-        y: seriesA[i + 1] - seriesB[i + 1],
-      })
-    }
-
-    return kickSeries
+  clone(): Tetromino {
+    return new Tetromino(this.shapeId, this.rotation, this.x, this.y)
   }
 
   moveToSpawnPostion(x: number, y: number): void {
@@ -80,10 +65,6 @@ class Tetromino {
       this.x + movementX,
       this.y + movementY,
     )
-  }
-
-  getKickSeries(rotation: number): Point[] {
-    return Tetromino.getKickSeries(this.shapeId, this.rotation, this.rotation + rotation)
   }
 
   static Moves = {
@@ -136,33 +117,6 @@ const Shapes = {
     [1, 1, 1],
     [0, 0, 0],
   ],
-}
-
-const CommonOffsetData = {
-  [Orientation.UP]: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [Orientation.LEFT]: [0, 0, -1, 0, -1, 1, 0, -2, -1, -2],
-  [Orientation.DOWN]: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [Orientation.RIGHT]: [0, 0, 1, 0, 1, 1, 0, -2, 1, -2],
-}
-
-const OffsetData = {
-  [ShapeId.I]: {
-    [Orientation.UP]: [0, 0, -1, 0, 2, 0, -1, 0, 2, 0],
-    [Orientation.LEFT]: [0, -1, 0, -1, 0, -1, 0, 1, 0, -2],
-    [Orientation.DOWN]: [-1, -1, 1, -1, -2, -1, 1, 0, -2, 0],
-    [Orientation.RIGHT]: [-1, 0, 0, 0, 0, 0, 0, -1, 0, 2],
-  },
-  [ShapeId.O]: {
-    [Orientation.UP]: [0, 0],
-    [Orientation.LEFT]: [-1, 0],
-    [Orientation.DOWN]: [-1, 1],
-    [Orientation.RIGHT]: [0, 1],
-  },
-  [ShapeId.J]: CommonOffsetData,
-  [ShapeId.L]: CommonOffsetData,
-  [ShapeId.S]: CommonOffsetData,
-  [ShapeId.Z]: CommonOffsetData,
-  [ShapeId.T]: CommonOffsetData,
 }
 
 export default Tetromino
