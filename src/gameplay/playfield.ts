@@ -1,8 +1,9 @@
-import { ShapeId, ShapeProvider, Point } from '../types'
+import { ShapeId, ShapeProvider, Point, TSpin } from '../types'
+import { Events } from 'phaser'
 import { Matrix } from './matrix'
 import Tetromino from './tetromino'
 import Randomizer from './randomizer'
-import { getRotation } from './rules'
+import { getRotation, getTSpin } from './rules'
 
 interface PlayfieldConfig {
   cols: number
@@ -22,7 +23,7 @@ const Defaults = {
   MAX_LOCK_DELAY_RESETS: 10,
 }
 
-class Playfield {
+class Playfield extends Events.EventEmitter {
   readonly cols: number
   readonly rows: number
   readonly firstVisibleRow: number
@@ -41,6 +42,18 @@ class Playfield {
   private nextStep: number
   private willLockPrevious: boolean
   private lockDelayResets: number
+  private tSpinPerfromed: TSpin
+
+  private emitHoldUpdated = (): boolean => this.emit(Playfield.Events.HOLD_UPDATED, this)
+  private emitQueueUpdated = (): boolean => this.emit(Playfield.Events.QUEUE_UPDATED, this)
+  private emitMatrixUpdated = (): boolean => this.emit(Playfield.Events.MATRIX_UPDATED, this)
+  private emitTetrominoUpdated = (): boolean => this.emit(Playfield.Events.TETROMINO_UPDATED, this)
+  private emitLinesClearing = (lines: number[], tSpin: TSpin): boolean =>
+    this.emit(Playfield.Events.LINES_CLEARING, this, lines, tSpin)
+  private emitLinesCleared = (count: number, tSpin: TSpin): boolean =>
+    this.emit(Playfield.Events.LINES_CLEARED, this, count, tSpin)
+  private emitTSpin = (tSpin: TSpin, linesCleared: number): boolean =>
+    this.emit(Playfield.Events.TSPIN, this, tSpin, linesCleared)
 
   constructor({
     cols,
@@ -52,6 +65,7 @@ class Playfield {
     maxLockDelayResets = Defaults.MAX_LOCK_DELAY_RESETS,
     shapeProvider = new Randomizer(),
   }: PlayfieldConfig) {
+    super()
     this.cols = cols
     this.rows = rows
     this.firstVisibleRow = firstVisibleRow
@@ -67,17 +81,20 @@ class Playfield {
     this.toppedOut = false
     this.nextStep = this.dropFrequency = dropFrequency
     this.lockDelayResets = 0
+    this.tSpinPerfromed = TSpin.NONE
     this.seedQueue(queueSize)
     this.spawn()
   }
 
   seedQueue(size: number): void {
     this.queue.push(...Array.from({ length: size }, () => this.shapeProvider.next()))
+    this.emitQueueUpdated()
   }
 
   spawnFromQueue(): void {
     this.queue.push(this.shapeProvider.next())
     this.spawn(this.queue.splice(0, 1)[0])
+    this.emitQueueUpdated()
   }
 
   spawn(shapeId?: ShapeId): void {
@@ -111,7 +128,7 @@ class Playfield {
     this.willLockPrevious = false
   }
 
-  updatedTetromino(): void {
+  updatedTetromino(tSpin?: TSpin): void {
     const willLock = !this.canMove(Tetromino.Moves.DOWN)
     if (willLock && this.lockDelayResets < this.maxLockDelayResets) {
       this.lockDelayResets++
@@ -120,6 +137,8 @@ class Playfield {
       this.nextStep = Math.min(this.nextStep, this.dropFrequency)
     }
     this.willLockPrevious = willLock
+    this.tSpinPerfromed = tSpin || TSpin.NONE
+    this.emitTetrominoUpdated()
   }
 
   hold(): void {
@@ -132,6 +151,7 @@ class Playfield {
       }
       this.held = newHold
       this.canHold = false
+      this.emitHoldUpdated()
     }
   }
 
@@ -142,26 +162,38 @@ class Playfield {
       this.topOut()
     } else {
       Matrix.setValues(this.matrix, points, this.tetromino.shapeId)
-      this.clearLines()
+      const fullLines = this.getFullLines()
+      if (this.tSpinPerfromed !== TSpin.NONE) {
+        this.emitTSpin(this.tSpinPerfromed, fullLines.length)
+      }
+      this.clearLines(fullLines, this.tSpinPerfromed)
+      this.emitMatrixUpdated()
       this.spawnFromQueue()
     }
   }
 
-  clearLines(): void {
-    const clearedLines: number[] = []
-    // Collect the indices of full rows.
+  getFullLines(): number[] {
+    const fullLines: number[] = []
     this.matrix.forEach((row, r) => {
       if (row.every((value) => value !== 0)) {
-        clearedLines.push(r)
+        fullLines.push(r)
       }
     })
+    return fullLines
+  }
 
-    // Clear the full rows.
-    if (clearedLines.length) {
-      clearedLines.forEach((r) => {
-        this.matrix.splice(r, 1)
-        this.matrix.unshift(Array(this.cols).fill(0))
-      })
+  clearLines(lines: number[], tSpin: TSpin): void {
+    if (lines.length) {
+      this.emitLinesClearing([...lines], tSpin)
+
+      if (lines.length) {
+        lines.forEach((r) => {
+          this.matrix.splice(r, 1)
+          this.matrix.unshift(Array(this.cols).fill(0))
+        })
+      }
+
+      this.emitLinesCleared(lines.length, tSpin)
     }
   }
 
@@ -193,7 +225,7 @@ class Playfield {
       if (rotate !== 0) {
         this.tetromino.rotate(rotate)
         this.tetromino.move(offset)
-        this.updatedTetromino()
+        this.updatedTetromino(getTSpin(this.tetromino, this.matrix, offset))
         return true
       }
     }
@@ -229,6 +261,7 @@ class Playfield {
     if (!this.toppedOut) {
       while (this.canMove(Tetromino.Moves.DOWN)) {
         this.tetromino.move(Tetromino.Moves.DOWN)
+        this.tSpinPerfromed = TSpin.NONE
       }
       this.lock()
     }
@@ -257,6 +290,16 @@ class Playfield {
         this.step()
       }
     }
+  }
+
+  static Events = {
+    QUEUE_UPDATED: 'QUEUE_UPDATED',
+    HOLD_UPDATED: 'HOLD_UPDATED',
+    MATRIX_UPDATED: 'MATRIX_UPDATED',
+    TETROMINO_UPDATED: 'TETROMINO_UPDATED',
+    LINES_CLEARING: 'LINES_CLEARING',
+    LINES_CLEARED: 'LINES_CLEARED',
+    TSPIN: 'TSPIN',
   }
 }
 

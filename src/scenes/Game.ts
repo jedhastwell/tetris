@@ -3,6 +3,7 @@ import MatrixDisplay from '../entities/matrixDisplay'
 import { Matrix } from '../gameplay/matrix'
 import Tetromino from '../gameplay/tetromino'
 import Playfield from '../gameplay/playfield'
+import { ShapeId, TSpin } from '../types'
 
 const PREVIEW_COUNT = 3
 
@@ -46,29 +47,37 @@ class Game extends Phaser.Scene {
     this.input.keyboard.addKey('X', true).on('down', this.playfield.rotateRight, this.playfield)
     this.input.keyboard.addKey('Z', true).on('down', this.playfield.rotateLeft, this.playfield)
     this.input.keyboard.addKey('C', true).on('down', this.playfield.hold, this.playfield)
+
+    this.playfield.on(Playfield.Events.QUEUE_UPDATED, this.updatePreview, this)
+    this.playfield.on(Playfield.Events.HOLD_UPDATED, this.updateHold, this)
+    this.playfield.on(Playfield.Events.MATRIX_UPDATED, this.updateMatrix, this)
+    this.playfield.on(Playfield.Events.TETROMINO_UPDATED, this.updateMatrix, this)
+    this.playfield.on(
+      Playfield.Events.TSPIN,
+      (playfield: Playfield, tSpin: TSpin, linesCleared: number) => {
+        console.log('Performed T-Splin', tSpin, linesCleared)
+      },
+    )
   }
 
-  updateHold(): void {
-    const matrix = this.playfield.held
-      ? Tetromino.getMatrix(this.playfield.held)
-      : Matrix.create(3, 3)
+  updateHold(playfield: Playfield): void {
+    const matrix = playfield.held ? Tetromino.getMatrix(playfield.held) : Matrix.create(3, 3)
     this.debugHold.draw(matrix)
   }
 
-  updatePreview(): void {
+  updatePreview(playfield: Playfield): void {
     const matrix = Matrix.create(4, 3 * PREVIEW_COUNT)
-    this.playfield.queue.forEach((shapeId, index) => {
+    playfield.queue.forEach((shapeId, index) => {
       const points = Tetromino.getPositions(shapeId)
       Matrix.setValues(matrix, points, shapeId, 0, index * 3)
     })
     this.debugQueue.draw(matrix)
   }
 
-  update(time: number, delta: number): void {
-    this.playfield.update(delta)
-    const output = this.playfield.getMatrix(true)
+  updateMatrix(playfield: Playfield): void {
+    const output = playfield.getMatrix(true)
 
-    this.playfield
+    playfield
       .getGhost()
       .getPositions()
       .forEach((p) => {
@@ -79,8 +88,10 @@ class Game extends Phaser.Scene {
 
     output.splice(0, 8)
     this.debugMatrix.draw(output)
-    this.updatePreview()
-    this.updateHold()
+  }
+
+  update(time: number, delta: number): void {
+    this.playfield.update(delta)
   }
 }
 
