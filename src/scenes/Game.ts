@@ -4,6 +4,7 @@ import { Matrix } from '../gameplay/matrix'
 import Tetromino from '../gameplay/tetromino'
 import Playfield from '../gameplay/playfield'
 import { ShapeId, TSpin } from '../types'
+import Score from '../gameplay/score'
 
 const PREVIEW_COUNT = 3
 
@@ -12,6 +13,7 @@ class Game extends Phaser.Scene {
   private debugQueue: MatrixDisplay
   private debugHold: MatrixDisplay
   private playfield: Playfield
+  private score: Score
 
   constructor() {
     super({ key: 'GameScene' })
@@ -33,6 +35,13 @@ class Game extends Phaser.Scene {
       firstVisibleRow: 8,
       queueSize: PREVIEW_COUNT,
     })
+
+    this.score = new Score()
+    this.score.bindPlayfieldEvents(this.playfield)
+
+    this.score.on(Score.Events.POINTS_CHANGED, (points: number) => console.log('Points: ', points))
+    this.score.on(Score.Events.LINES_CHANGED, (lines: number) => console.log('Lines: ', lines))
+    this.score.on(Score.Events.LEVEL_CHANGED, (level: number) => console.log('Level: ', level))
 
     const keys = ['LEFT', 'RIGHT']
     keys.forEach((key) => {

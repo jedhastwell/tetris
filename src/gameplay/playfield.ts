@@ -48,6 +48,8 @@ class Playfield extends Events.EventEmitter {
   private emitQueueUpdated = (): boolean => this.emit(Playfield.Events.QUEUE_UPDATED, this)
   private emitMatrixUpdated = (): boolean => this.emit(Playfield.Events.MATRIX_UPDATED, this)
   private emitTetrominoUpdated = (): boolean => this.emit(Playfield.Events.TETROMINO_UPDATED, this)
+  private emitSoftDrop = (): boolean => this.emit(Playfield.Events.SOFT_DROP, this)
+  private emitHardDrop = (): boolean => this.emit(Playfield.Events.HARD_DROP, this)
   private emitLinesClearing = (lines: number[], tSpin: TSpin): boolean =>
     this.emit(Playfield.Events.LINES_CLEARING, this, lines, tSpin)
   private emitLinesCleared = (count: number, tSpin: TSpin): boolean =>
@@ -255,6 +257,7 @@ class Playfield extends Events.EventEmitter {
 
   softDrop(): void {
     this.tryMove(Tetromino.Moves.DOWN)
+    this.emitSoftDrop()
   }
 
   hardDrop(): void {
@@ -262,6 +265,7 @@ class Playfield extends Events.EventEmitter {
       while (this.canMove(Tetromino.Moves.DOWN)) {
         this.tetromino.move(Tetromino.Moves.DOWN)
         this.tSpinPerfromed = TSpin.NONE
+        this.emitHardDrop()
       }
       this.lock()
     }
@@ -297,6 +301,8 @@ class Playfield extends Events.EventEmitter {
     HOLD_UPDATED: 'HOLD_UPDATED',
     MATRIX_UPDATED: 'MATRIX_UPDATED',
     TETROMINO_UPDATED: 'TETROMINO_UPDATED',
+    SOFT_DROP: 'SOFT_DROP',
+    HARD_DROP: 'HARD_DROP',
     LINES_CLEARING: 'LINES_CLEARING',
     LINES_CLEARED: 'LINES_CLEARED',
     TSPIN: 'TSPIN',
