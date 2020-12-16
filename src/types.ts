@@ -29,3 +29,12 @@ export interface Point {
 export interface ShapeProvider {
   next(): ShapeId
 }
+
+export type PlayfieldCommand =
+  | 'moveLeft'
+  | 'moveRight'
+  | 'softDrop'
+  | 'hardDrop'
+  | 'rotateLeft'
+  | 'rotateRight'
+  | 'hold'

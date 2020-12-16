@@ -255,9 +255,18 @@ class Playfield extends Events.EventEmitter {
     return canMove
   }
 
+  moveLeft(): boolean {
+    return this.tryMove(Tetromino.Moves.LEFT)
+  }
+
+  moveRight(): boolean {
+    return this.tryMove(Tetromino.Moves.RIGHT)
+  }
+
   softDrop(): void {
-    this.tryMove(Tetromino.Moves.DOWN)
-    this.emitSoftDrop()
+    if (this.tryMove(Tetromino.Moves.DOWN)) {
+      this.emitSoftDrop()
+    }
   }
 
   hardDrop(): void {

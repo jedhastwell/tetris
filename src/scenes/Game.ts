@@ -3,8 +3,10 @@ import MatrixDisplay from '../entities/matrixDisplay'
 import { Matrix } from '../gameplay/matrix'
 import Tetromino from '../gameplay/tetromino'
 import Playfield from '../gameplay/playfield'
-import { ShapeId, TSpin } from '../types'
+import { PlayfieldCommand, TSpin } from '../types'
 import Score from '../gameplay/score'
+import { Settings, Controls } from '../settings'
+import Repeater from '../gameplay/repeater'
 
 const PREVIEW_COUNT = 3
 
@@ -43,19 +45,7 @@ class Game extends Phaser.Scene {
     this.score.on(Score.Events.LINES_CHANGED, (lines: number) => console.log('Lines: ', lines))
     this.score.on(Score.Events.LEVEL_CHANGED, (level: number) => console.log('Level: ', level))
 
-    const keys = ['LEFT', 'RIGHT']
-    keys.forEach((key) => {
-      this.input.keyboard
-        .addKey(key, true)
-        .on('down', () => this.playfield.tryMove((<any>Tetromino.Moves)[key]))
-    })
-
-    this.input.keyboard.addKey('DOWN', true).on('down', this.playfield.softDrop, this.playfield)
-    this.input.keyboard.addKey('SPACE', true).on('down', this.playfield.hardDrop, this.playfield)
-    this.input.keyboard.addKey('UP', true).on('down', this.playfield.rotateRight, this.playfield)
-    this.input.keyboard.addKey('X', true).on('down', this.playfield.rotateRight, this.playfield)
-    this.input.keyboard.addKey('Z', true).on('down', this.playfield.rotateLeft, this.playfield)
-    this.input.keyboard.addKey('C', true).on('down', this.playfield.hold, this.playfield)
+    this.assignControls()
 
     this.playfield.on(Playfield.Events.QUEUE_UPDATED, this.updatePreview, this)
     this.playfield.on(Playfield.Events.HOLD_UPDATED, this.updateHold, this)
@@ -67,6 +57,31 @@ class Game extends Phaser.Scene {
         console.log('Performed T-Splin', tSpin, linesCleared)
       },
     )
+  }
+
+  handlePlayfieldInput(command: PlayfieldCommand): void {
+    this.playfield[command]()
+  }
+
+  assignControls(): void {
+    Object.keys(Controls.Keys).forEach((command: PlayfieldCommand) => {
+      Controls.Keys[command].forEach((keyName) => {
+        const key = this.input.keyboard.addKey(keyName, true)
+
+        if (['moveLeft', 'moveRight', 'softDrop'].includes(command)) {
+          const repeater = new Repeater(this, {
+            callback: () => this.handlePlayfieldInput(command),
+            repeatDelay: Settings.REPEAT_DELAY,
+            repeatSpeed: Settings.REPEAT_SPEED,
+          })
+
+          key.on('down', repeater.start, repeater)
+          key.on('up', repeater.stop, repeater)
+        } else {
+          key.on('down', () => this.handlePlayfieldInput(command), this)
+        }
+      })
+    })
   }
 
   updateHold(playfield: Playfield): void {
