@@ -134,9 +134,9 @@ class Playfield extends Events.EventEmitter {
     const willLock = !this.canMove(Tetromino.Moves.DOWN)
     if (willLock && this.lockDelayResets < this.maxLockDelayResets) {
       this.lockDelayResets++
-      this.nextStep = Math.max(this.nextStep, this.lockDelay)
+      this.nextStep = this.lockDelay
     } else if (!willLock && this.willLockPrevious) {
-      this.nextStep = Math.min(this.nextStep, this.dropFrequency)
+      this.nextStep = this.dropFrequency
     }
     this.willLockPrevious = willLock
     this.tSpinPerfromed = tSpin || TSpin.NONE
