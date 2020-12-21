@@ -37,9 +37,9 @@ class Playfield extends Events.EventEmitter {
   public lockDelay: number
   public maxLockDelayResets: number
   public toppedOut: boolean
+  public nextStep: number
 
   private matrix: Matrix
-  private nextStep: number
   private willLockPrevious: boolean
   private lockDelayResets: number
   private tSpinPerfromed: TSpin
@@ -47,7 +47,8 @@ class Playfield extends Events.EventEmitter {
   private emitHoldUpdated = (): boolean => this.emit(Playfield.Events.HOLD_UPDATED, this)
   private emitQueueUpdated = (): boolean => this.emit(Playfield.Events.QUEUE_UPDATED, this)
   private emitMatrixUpdated = (): boolean => this.emit(Playfield.Events.MATRIX_UPDATED, this)
-  private emitTetrominoUpdated = (): boolean => this.emit(Playfield.Events.TETROMINO_UPDATED, this)
+  private emitTetrominoUpdated = (willLock: boolean): boolean =>
+    this.emit(Playfield.Events.TETROMINO_UPDATED, this, willLock)
   private emitSoftDrop = (): boolean => this.emit(Playfield.Events.SOFT_DROP, this)
   private emitHardDrop = (): boolean => this.emit(Playfield.Events.HARD_DROP, this)
   private emitLinesClearing = (lines: number[], tSpin: TSpin): boolean =>
@@ -209,6 +210,10 @@ class Playfield extends Events.EventEmitter {
       Matrix.setValues(matrix, this.tetromino.getPositions(), this.tetromino.shapeId)
     }
     return matrix
+  }
+
+  getTetromino(): Tetromino {
+    return this.tetromino.clone()
   }
 
   getGhost(): Tetromino {

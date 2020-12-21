@@ -32,18 +32,21 @@ class Tetromino {
     return new Tetromino(this.shapeId, this.rotation, this.x, this.y)
   }
 
-  moveToSpawnPostion(x: number, y: number): void {
+  moveToSpawnPostion(x: number, y: number): this {
     this.x = x - Math.ceil(Shapes[this.shapeId][0].length / 2)
     this.y = y - 1
+    return this
   }
 
-  rotate(rotation: number): void {
+  rotate(rotation: number): this {
     this.rotation += rotation
+    return this
   }
 
-  move(movement: Point): void {
+  move(movement: Point): this {
     this.x += movement.x
     this.y += movement.y
+    return this
   }
 
   getMatrix(): number[][] {
