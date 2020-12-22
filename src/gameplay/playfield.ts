@@ -57,6 +57,7 @@ class Playfield extends Events.EventEmitter {
     this.emit(Playfield.Events.LINES_CLEARED, this, count, tSpin)
   private emitTSpin = (tSpin: TSpin, linesCleared: number): boolean =>
     this.emit(Playfield.Events.TSPIN, this, tSpin, linesCleared)
+  private emitToppedOut = (): boolean => this.emit(Playfield.Events.TOPPED_OUT, this)
 
   constructor({
     cols,
@@ -72,11 +73,11 @@ class Playfield extends Events.EventEmitter {
     this.cols = cols
     this.rows = rows
     this.firstVisibleRow = firstVisibleRow
+    this.shapeProvider = shapeProvider
 
     this.matrix = Matrix.create(cols, rows)
     this.queue = []
     this.held = null
-    this.shapeProvider = shapeProvider
     this.canHold = true
     this.lockDelay = lockDelay
     this.maxLockDelayResets = maxLockDelayResets
@@ -141,7 +142,7 @@ class Playfield extends Events.EventEmitter {
     }
     this.willLockPrevious = willLock
     this.tSpinPerfromed = tSpin || TSpin.NONE
-    this.emitTetrominoUpdated()
+    this.emitTetrominoUpdated(willLock)
   }
 
   hold(): void {
@@ -287,6 +288,7 @@ class Playfield extends Events.EventEmitter {
 
   topOut(): void {
     this.toppedOut = true
+    this.emitToppedOut()
   }
 
   resetNextStep(): void {
@@ -320,6 +322,7 @@ class Playfield extends Events.EventEmitter {
     LINES_CLEARING: 'LINES_CLEARING',
     LINES_CLEARED: 'LINES_CLEARED',
     TSPIN: 'TSPIN',
+    TOPPED_OUT: 'TOPPED_OUT',
   }
 }
 
