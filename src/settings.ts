@@ -27,6 +27,7 @@ export const Settings = {
   QUEUE_SIZE: 3,
   LOCK_DELAY: 600,
   MAX_LOCK_DELAY_RESETS: 10,
+  LEADERBOARD_ENTRIES_SAVED: 5,
   LEVEL_SPEEDS: {
     1: 800,
     2: 720,

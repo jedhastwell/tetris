@@ -1,8 +1,8 @@
 import { Events } from 'phaser'
 import Playfield from './playfield'
-import { TSpin } from '../types'
+import { GameStats, TSpin } from '../types'
 
-class Score extends Events.EventEmitter {
+class Score extends Events.EventEmitter implements GameStats {
   level: number
   lines: number
   points: number

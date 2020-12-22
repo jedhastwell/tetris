@@ -30,6 +30,12 @@ export interface ShapeProvider {
   next(): ShapeId
 }
 
+export interface GameStats {
+  level: number
+  lines: number
+  points: number
+}
+
 export type PlayfieldCommand =
   | 'moveLeft'
   | 'moveRight'
