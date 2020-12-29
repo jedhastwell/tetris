@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import Playfield from '../gameplay/playfield'
 import { PlayfieldCommand, TSpin } from '../types'
 import Score from '../gameplay/score'
+import Leaderboard from '../gameplay/leaderboard'
 import { Settings, Controls } from '../settings'
 import Repeater from '../gameplay/repeater'
 import Preview from '../entities/preview'
@@ -13,6 +14,7 @@ const PANEL_SPACING = 68
 class Game extends Phaser.Scene {
   private playfield: Playfield
   private score: Score
+  private leaderboard: Leaderboard
   private nextPanel: PreviewPanel
   private holdPanel: PreviewPanel
   private board: Board
@@ -20,6 +22,8 @@ class Game extends Phaser.Scene {
   private scoreLabel: Phaser.GameObjects.Text
   private linesLabel: Phaser.GameObjects.Text
   private levelLabel: Phaser.GameObjects.Text
+  private highScorePanel: Phaser.GameObjects.Image
+  private highScoreLabel: Phaser.GameObjects.Text
 
   constructor() {
     super({ key: 'GameScene' })
@@ -41,6 +45,8 @@ class Game extends Phaser.Scene {
     })
 
     this.score = new Score()
+    this.leaderboard = new Leaderboard(Settings.LEADERBOARD_ENTRIES_SAVED)
+    this.leaderboard.load()
 
     // Hold panel
     this.holdPanel = new Preview(this, 196, 36, 1, 'hold')
@@ -54,6 +60,19 @@ class Game extends Phaser.Scene {
     this.scoreLabel = this.createLabel(this.scorePanel.x, this.scorePanel.y + 104, '0')
     this.linesLabel = this.createLabel(this.scorePanel.x, this.scorePanel.y + 224, '0')
     this.levelLabel = this.createLabel(this.scorePanel.x, this.scorePanel.y + 344, '1')
+
+    // High score panel
+    this.highScorePanel = this.add
+      .image(0, 0, 'atlas', 'high-score-panel')
+      .setPosition(this.scorePanel.x, this.scorePanel.getBounds().bottom - 96 + PANEL_SPACING)
+      .setOrigin(0.5, 0)
+      .setVisible(this.leaderboard.hasEntries())
+
+    const highScore = this.leaderboard.getHighScore().toLocaleString()
+    this.highScoreLabel = this.createLabel(0, 0, highScore, { textAlign: 'right' })
+      .setPosition(this.highScorePanel.x + 96, this.highScorePanel.y + 24)
+      .setOrigin(1, 0)
+      .setVisible(this.leaderboard.hasEntries())
 
     // Board background
     const boardPanel = this.add
@@ -111,6 +130,7 @@ class Game extends Phaser.Scene {
     this.playfield.on(Playfield.Events.HOLD_UPDATED, this.updateHold, this)
     this.playfield.on(Playfield.Events.MATRIX_UPDATED, this.updateMatrix, this)
     this.playfield.on(Playfield.Events.TETROMINO_UPDATED, this.updateTetromino, this)
+    this.playfield.on(Playfield.Events.TOPPED_OUT, this.gameOver, this)
     this.playfield.on(
       Playfield.Events.TSPIN,
       (playfield: Playfield, tSpin: TSpin, linesCleared: number) => {
@@ -166,6 +186,13 @@ class Game extends Phaser.Scene {
     this.board.updateMatrix(matrix)
   }
 
+  gameOver(): void {
+    this.leaderboard.submit(this.score, '', Date.now())
+    this.leaderboard.save()
+    this.highScorePanel.setVisible(true)
+    this.highScoreLabel.setVisible(true)
+    this.highScoreLabel.setText(this.leaderboard.getHighScore().toLocaleString())
+  }
   update(time: number, delta: number): void {
     this.playfield.update(delta)
   }
