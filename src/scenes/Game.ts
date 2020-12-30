@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import Playfield from '../gameplay/playfield'
-import { PlayfieldCommand, TSpin } from '../types'
+import { SceneNames, PlayfieldCommand, TSpin } from '../types'
 import Score from '../gameplay/score'
 import Leaderboard from '../gameplay/leaderboard'
 import { Settings, Controls } from '../settings'
@@ -26,11 +26,7 @@ class Game extends Phaser.Scene {
   private highScoreLabel: Phaser.GameObjects.Text
 
   constructor() {
-    super({ key: 'GameScene' })
-  }
-
-  preload(): void {
-    this.load.atlas('atlas', 'assets/atlas.png', 'assets/atlas.json')
+    super({ key: SceneNames.GameScene })
   }
 
   create(): void {

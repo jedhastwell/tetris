@@ -44,3 +44,9 @@ export type PlayfieldCommand =
   | 'rotateLeft'
   | 'rotateRight'
   | 'hold'
+
+export enum SceneNames {
+  PrealoadScene = 'PrealoadScene',
+  BootScene = 'BootScene',
+  GameScene = 'GameScene',
+}
