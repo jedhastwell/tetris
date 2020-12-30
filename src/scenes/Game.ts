@@ -11,10 +11,17 @@ import Board from '../entities/board'
 
 const PANEL_SPACING = 68
 
+enum GameState {
+  Starting,
+  Playing,
+  Over,
+}
+
 class Game extends Phaser.Scene {
   private playfield: Playfield
   private score: Score
   private leaderboard: Leaderboard
+  private gameState: GameState
   private nextPanel: PreviewPanel
   private holdPanel: PreviewPanel
   private board: Board
@@ -89,6 +96,7 @@ class Game extends Phaser.Scene {
 
     this.assignControls()
     this.bindEvents()
+    this.start(Settings.START_DELAY)
   }
 
   createLabel(
@@ -136,7 +144,9 @@ class Game extends Phaser.Scene {
   }
 
   handlePlayfieldInput(command: PlayfieldCommand): void {
-    this.playfield[command]()
+    if (this.gameState === GameState.Playing) {
+      this.playfield[command]()
+    }
   }
 
   assignControls(): void {
@@ -157,6 +167,14 @@ class Game extends Phaser.Scene {
           key.on('down', () => this.handlePlayfieldInput(command), this)
         }
       })
+    })
+  }
+
+  start(delay: number): void {
+    this.gameState = GameState.Starting
+    this.time.delayedCall(delay, () => {
+      this.playfield.init()
+      this.gameState = GameState.Playing
     })
   }
 
@@ -183,14 +201,19 @@ class Game extends Phaser.Scene {
   }
 
   gameOver(): void {
+    this.gameState = GameState.Over
+
     this.leaderboard.submit(this.score, '', Date.now())
     this.leaderboard.save()
     this.highScorePanel.setVisible(true)
     this.highScoreLabel.setVisible(true)
     this.highScoreLabel.setText(this.leaderboard.getHighScore().toLocaleString())
   }
+
   update(time: number, delta: number): void {
-    this.playfield.update(delta)
+    if (this.gameState === GameState.Playing) {
+      this.playfield.update(delta)
+    }
   }
 }
 

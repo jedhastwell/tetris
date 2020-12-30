@@ -90,6 +90,13 @@ class Playfield extends Events.EventEmitter {
     this.spawn()
   }
 
+  init(): void {
+    this.emitQueueUpdated()
+    this.updatedTetromino()
+    this.emitHoldUpdated()
+    this.emitMatrixUpdated()
+  }
+
   seedQueue(size: number): void {
     this.queue.push(...Array.from({ length: size }, () => this.shapeProvider.next()))
     this.emitQueueUpdated()
