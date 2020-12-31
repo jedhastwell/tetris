@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import WebFont from '../loaders/web-font'
 import { SceneNames } from '../types'
 
 class Game extends Phaser.Scene {
@@ -12,6 +13,8 @@ class Game extends Phaser.Scene {
 
   preload(): void {
     this.logo = this.add.image(this.scale.width / 2, this.scale.height / 3, 'logo')
+
+    this.load.addFile(new WebFont(this.load, { google: { families: ['Rubik:700'] } }))
     this.load.atlas('atlas', 'assets/atlas.png', 'assets/atlas.json')
 
     this.events.on('transitionout', this.transitionOut, this)
