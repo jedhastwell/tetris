@@ -43,7 +43,7 @@ class Game extends Phaser.Scene {
       firstVisibleRow: Settings.ROW_BUFFER,
       queueSize: Settings.QUEUE_SIZE,
       lockDelay: Settings.LOCK_DELAY,
-      dropFrequency: Settings.LEVEL_SPEEDS[1],
+      initialDropFrequency: Settings.LEVEL_SPEEDS[1],
       maxLockDelayResets: Settings.MAX_LOCK_DELAY_RESETS,
     })
 
@@ -173,7 +173,7 @@ class Game extends Phaser.Scene {
   start(delay: number): void {
     this.gameState = GameState.Starting
     this.time.delayedCall(delay, () => {
-      this.playfield.init()
+      this.playfield.reset()
       this.gameState = GameState.Playing
     })
   }

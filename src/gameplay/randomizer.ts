@@ -4,7 +4,7 @@ class Randomizer implements ShapeProvider {
   private batch: ShapeId[]
 
   constructor() {
-    this.batch = []
+    this.reset()
   }
 
   private fill(): void {
@@ -15,6 +15,10 @@ class Randomizer implements ShapeProvider {
     this.batch.push(ShapeId.S)
     this.batch.push(ShapeId.Z)
     this.batch.push(ShapeId.T)
+  }
+
+  reset(): void {
+    this.batch = []
   }
 
   next(): ShapeId {

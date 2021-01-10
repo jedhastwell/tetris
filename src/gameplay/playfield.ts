@@ -10,7 +10,7 @@ interface PlayfieldConfig {
   rows: number
   firstVisibleRow: number
   queueSize?: number
-  dropFrequency?: number
+  initialDropFrequency?: number
   shapeProvider?: ShapeProvider
   lockDelay?: number
   maxLockDelayResets?: number
@@ -29,13 +29,15 @@ class Playfield extends Events.EventEmitter {
   readonly firstVisibleRow: number
   readonly queue: ShapeId[]
   readonly shapeProvider: ShapeProvider
+  readonly initialDropFrequency: number
+  readonly queueSize: number
+  readonly lockDelay: number
+  readonly maxLockDelayResets: number
 
   public tetromino: Tetromino
   public held: ShapeId | null
   public canHold: boolean
   public dropFrequency: number
-  public lockDelay: number
-  public maxLockDelayResets: number
   public toppedOut: boolean
   public nextStep: number
 
@@ -63,7 +65,7 @@ class Playfield extends Events.EventEmitter {
     cols,
     rows,
     firstVisibleRow,
-    dropFrequency = Defaults.DROP_FREQUENCY,
+    initialDropFrequency = Defaults.DROP_FREQUENCY,
     queueSize = Defaults.QUEUE_SIZE,
     lockDelay = Defaults.LOCK_DELAY,
     maxLockDelayResets = Defaults.MAX_LOCK_DELAY_RESETS,
@@ -74,25 +76,31 @@ class Playfield extends Events.EventEmitter {
     this.rows = rows
     this.firstVisibleRow = firstVisibleRow
     this.shapeProvider = shapeProvider
-
-    this.matrix = Matrix.create(cols, rows)
-    this.queue = []
-    this.held = null
-    this.canHold = true
+    this.initialDropFrequency = initialDropFrequency
+    this.queueSize = queueSize
     this.lockDelay = lockDelay
     this.maxLockDelayResets = maxLockDelayResets
+    this.matrix = Matrix.create(cols, rows)
+    this.queue = []
 
-    this.toppedOut = false
-    this.nextStep = this.dropFrequency = dropFrequency
-    this.lockDelayResets = 0
-    this.tSpinPerfromed = TSpin.NONE
-    this.seedQueue(queueSize)
-    this.spawn()
+    this.reset()
   }
 
-  init(): void {
-    this.emitQueueUpdated()
-    this.updatedTetromino()
+  reset(): void {
+    this.shapeProvider.reset()
+    Matrix.clear(this.matrix)
+    this.queue.splice(0, this.queue.length)
+
+    this.held = null
+    this.canHold = true
+    this.toppedOut = false
+    this.dropFrequency = this.initialDropFrequency
+    this.nextStep = this.initialDropFrequency
+    this.lockDelayResets = 0
+    this.tSpinPerfromed = TSpin.NONE
+
+    this.seedQueue(this.queueSize)
+    this.spawn()
     this.emitHoldUpdated()
     this.emitMatrixUpdated()
   }

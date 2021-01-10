@@ -28,6 +28,7 @@ export interface Point {
 
 export interface ShapeProvider {
   next(): ShapeId
+  reset(): void
 }
 
 export interface GameStats {

@@ -47,7 +47,12 @@ test('Game not over if tetromino locks partially out of view', () => {
 })
 
 test('Time to next drop is reset after a spawn', () => {
-  const playfield = new Playfield({ cols: 10, rows: 8, firstVisibleRow: 4, dropFrequency: 2000 })
+  const playfield = new Playfield({
+    cols: 10,
+    rows: 8,
+    firstVisibleRow: 4,
+    initialDropFrequency: 2000,
+  })
   playfield.update(500)
   expect((<any>playfield).nextStep).toEqual(1500)
   playfield.spawn()
