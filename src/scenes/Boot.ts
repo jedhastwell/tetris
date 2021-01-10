@@ -12,7 +12,7 @@ class Game extends Phaser.Scene {
   }
 
   create(): void {
-    this.scene.start(SceneNames.PrealoadScene)
+    this.scene.start(SceneNames.PreloadScene)
   }
 }
 

@@ -8,7 +8,7 @@ class Game extends Phaser.Scene {
   private logo: Phaser.GameObjects.Image
 
   constructor() {
-    super({ key: SceneNames.PrealoadScene })
+    super({ key: SceneNames.PreloadScene })
   }
 
   preload(): void {
