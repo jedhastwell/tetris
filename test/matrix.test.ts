@@ -1,4 +1,5 @@
 import { Matrix } from '../src/gameplay/matrix'
+import { ShapeId } from '../src/types'
 
 test('create produces expected output', () => {
   const matrix = Matrix.create(4, 4)
@@ -7,6 +8,17 @@ test('create produces expected output', () => {
     [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0],
+  ])
+})
+
+test('clear fills matrix in place with passed value', () => {
+  const matrix = Matrix.create(4, 4)
+  Matrix.clear(matrix, ShapeId.J)
+  expect(matrix).toEqual([
+    [2, 2, 2, 2],
+    [2, 2, 2, 2],
+    [2, 2, 2, 2],
+    [2, 2, 2, 2],
   ])
 })
 

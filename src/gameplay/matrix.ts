@@ -4,8 +4,13 @@ import { ShapeId, Point } from '../types'
 export type Matrix = (ShapeId | 0)[][]
 
 export const Matrix = {
-  create(cols: number, rows: number): Matrix {
-    return Array.from({ length: rows }, () => Array(cols).fill(0))
+  create(cols: number, rows: number, value: ShapeId | 0 = 0): Matrix {
+    return Array.from({ length: rows }, () => Array(cols).fill(value))
+  },
+
+  clear(matrix: Matrix, value: ShapeId | 0 = 0): Matrix {
+    matrix.forEach((row) => row.fill(value, 0))
+    return matrix
   },
 
   clone(matrix: Matrix): Matrix {
