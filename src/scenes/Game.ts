@@ -42,9 +42,6 @@ class Game extends Phaser.Scene {
       rows: Settings.ROWS + Settings.ROW_BUFFER,
       firstVisibleRow: Settings.ROW_BUFFER,
       queueSize: Settings.QUEUE_SIZE,
-      lockDelay: Settings.LOCK_DELAY,
-      initialDropFrequency: Settings.LEVEL_SPEEDS[1],
-      maxLockDelayResets: Settings.MAX_LOCK_DELAY_RESETS,
     })
 
     this.score = new Score()
@@ -125,10 +122,6 @@ class Game extends Phaser.Scene {
     )
     this.score.on(Score.Events.LEVEL_CHANGED, (level: number) => {
       this.levelLabel.setText(level.toLocaleString())
-      const newSpeed = (<any>Settings.LEVEL_SPEEDS)[level]
-      if (newSpeed) {
-        this.playfield.dropFrequency = newSpeed
-      }
     })
     this.playfield.on(Playfield.Events.QUEUE_UPDATED, this.updatePreview, this)
     this.playfield.on(Playfield.Events.HOLD_UPDATED, this.updateHold, this)

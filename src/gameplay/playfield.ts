@@ -10,17 +10,35 @@ interface PlayfieldConfig {
   rows: number
   firstVisibleRow: number
   queueSize?: number
-  initialDropFrequency?: number
   shapeProvider?: ShapeProvider
   lockDelay?: number
   maxLockDelayResets?: number
+  linesPerLevel?: number
+  levelSpeeds?: { [key: number]: number }
 }
 
 const Defaults = {
   QUEUE_SIZE: 1,
-  DROP_FREQUENCY: 800,
-  LOCK_DELAY: 500,
+  LOCK_DELAY: 600,
   MAX_LOCK_DELAY_RESETS: 10,
+  LINES_PER_LEVEL: 10,
+  LEVEL_SPEEDS: {
+    1: 800,
+    2: 720,
+    3: 630,
+    4: 550,
+    5: 470,
+    6: 380,
+    7: 300,
+    8: 220,
+    9: 130,
+    10: 100,
+    11: 80,
+    14: 70,
+    17: 50,
+    20: 30,
+    30: 20,
+  },
 }
 
 class Playfield extends Events.EventEmitter {
@@ -29,17 +47,20 @@ class Playfield extends Events.EventEmitter {
   readonly firstVisibleRow: number
   readonly queue: ShapeId[]
   readonly shapeProvider: ShapeProvider
-  readonly initialDropFrequency: number
   readonly queueSize: number
   readonly lockDelay: number
   readonly maxLockDelayResets: number
+  readonly linesPerLevel: number
+  readonly levelSpeeds: { [key: number]: number }
+  readonly config: PlayfieldConfig
 
   public tetromino: Tetromino
   public held: ShapeId | null
   public canHold: boolean
-  public dropFrequency: number
+  public level: number
   public toppedOut: boolean
   public nextStep: number
+  public nextLevelUp: number
 
   private matrix: Matrix
   private willLockPrevious: boolean
@@ -49,6 +70,8 @@ class Playfield extends Events.EventEmitter {
   private emitHoldUpdated = (): boolean => this.emit(Playfield.Events.HOLD_UPDATED, this)
   private emitQueueUpdated = (): boolean => this.emit(Playfield.Events.QUEUE_UPDATED, this)
   private emitMatrixUpdated = (): boolean => this.emit(Playfield.Events.MATRIX_UPDATED, this)
+  private emitLevelUpdated = (level: number): boolean =>
+    this.emit(Playfield.Events.LEVEL_UPDATED, this, level)
   private emitTetrominoUpdated = (willLock: boolean): boolean =>
     this.emit(Playfield.Events.TETROMINO_UPDATED, this, willLock)
   private emitSoftDrop = (): boolean => this.emit(Playfield.Events.SOFT_DROP, this)
@@ -65,10 +88,11 @@ class Playfield extends Events.EventEmitter {
     cols,
     rows,
     firstVisibleRow,
-    initialDropFrequency = Defaults.DROP_FREQUENCY,
     queueSize = Defaults.QUEUE_SIZE,
     lockDelay = Defaults.LOCK_DELAY,
     maxLockDelayResets = Defaults.MAX_LOCK_DELAY_RESETS,
+    linesPerLevel = Defaults.LINES_PER_LEVEL,
+    levelSpeeds = Defaults.LEVEL_SPEEDS,
     shapeProvider = new Randomizer(),
   }: PlayfieldConfig) {
     super()
@@ -76,17 +100,18 @@ class Playfield extends Events.EventEmitter {
     this.rows = rows
     this.firstVisibleRow = firstVisibleRow
     this.shapeProvider = shapeProvider
-    this.initialDropFrequency = initialDropFrequency
     this.queueSize = queueSize
     this.lockDelay = lockDelay
     this.maxLockDelayResets = maxLockDelayResets
+    this.linesPerLevel = linesPerLevel
+    this.levelSpeeds = levelSpeeds
     this.matrix = Matrix.create(cols, rows)
     this.queue = []
 
     this.reset()
   }
 
-  reset(): void {
+  reset(level = 1): void {
     this.shapeProvider.reset()
     Matrix.clear(this.matrix)
     this.queue.splice(0, this.queue.length)
@@ -94,8 +119,9 @@ class Playfield extends Events.EventEmitter {
     this.held = null
     this.canHold = true
     this.toppedOut = false
-    this.dropFrequency = this.initialDropFrequency
-    this.nextStep = this.initialDropFrequency
+    this.level = level
+    this.nextStep = this.getDropFrequency()
+    this.nextLevelUp = this.linesPerLevel
     this.lockDelayResets = 0
     this.tSpinPerfromed = TSpin.NONE
 
@@ -103,9 +129,19 @@ class Playfield extends Events.EventEmitter {
     this.spawn()
     this.emitHoldUpdated()
     this.emitMatrixUpdated()
+    this.emitLevelUpdated(level)
+  }
+
+  getDropFrequency(level = this.level): number {
+    const levels = Object.keys(this.levelSpeeds).map((value) => Number.parseInt(value))
+    const key = levels.reduce((previous, current) =>
+      current <= level ? Math.max(current, previous) : previous,
+    )
+    return this.levelSpeeds[key]
   }
 
   seedQueue(size: number): void {
+    // this.queue.push(ShapeId.T, ShapeId.J, ShapeId.L, ShapeId.L, ShapeId.T)
     this.queue.push(...Array.from({ length: size }, () => this.shapeProvider.next()))
     this.emitQueueUpdated()
   }
@@ -153,7 +189,7 @@ class Playfield extends Events.EventEmitter {
       this.lockDelayResets++
       this.nextStep = this.lockDelay
     } else if (!willLock && this.willLockPrevious) {
-      this.nextStep = this.dropFrequency
+      this.nextStep = this.getDropFrequency()
     }
     this.willLockPrevious = willLock
     this.tSpinPerfromed = tSpin || TSpin.NONE
@@ -213,6 +249,13 @@ class Playfield extends Events.EventEmitter {
       }
 
       this.emitLinesCleared(lines.length, tSpin)
+
+      this.nextLevelUp -= lines.length
+      if (this.nextLevelUp <= 0) {
+        this.nextLevelUp += this.linesPerLevel
+        this.level++
+        this.emitLevelUpdated(this.level)
+      }
     }
   }
 
@@ -307,7 +350,7 @@ class Playfield extends Events.EventEmitter {
   }
 
   resetNextStep(): void {
-    this.nextStep = this.dropFrequency
+    this.nextStep = this.getDropFrequency()
   }
 
   step(): void {
@@ -321,7 +364,7 @@ class Playfield extends Events.EventEmitter {
       this.nextStep -= elapsed
 
       if (this.nextStep <= 0) {
-        this.nextStep += this.dropFrequency
+        this.nextStep += this.getDropFrequency()
         this.step()
       }
     }
@@ -331,6 +374,7 @@ class Playfield extends Events.EventEmitter {
     QUEUE_UPDATED: 'QUEUE_UPDATED',
     HOLD_UPDATED: 'HOLD_UPDATED',
     MATRIX_UPDATED: 'MATRIX_UPDATED',
+    LEVEL_UPDATED: 'LEVELED_UPDATED',
     TETROMINO_UPDATED: 'TETROMINO_UPDATED',
     SOFT_DROP: 'SOFT_DROP',
     HARD_DROP: 'HARD_DROP',

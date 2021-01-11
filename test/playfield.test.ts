@@ -1,5 +1,5 @@
 import Playfield from '../src/gameplay/playfield'
-import { ShapeId } from '../src/types'
+import { ShapeId, TSpin } from '../src/types'
 
 test('The I tetromino drops into place after spawning', () => {
   const playfield = new Playfield({
@@ -46,17 +46,64 @@ test('Game not over if tetromino locks partially out of view', () => {
   expect(playfield.toppedOut).toEqual(false)
 })
 
+test('getDropFrequency returns expected values', () => {
+  const playfield = new Playfield({
+    cols: 10,
+    rows: 8,
+    firstVisibleRow: 4,
+    levelSpeeds: {
+      20: 100,
+      1: 800,
+      30: 50,
+      2: 700,
+    },
+  })
+  expect(playfield.getDropFrequency()).toEqual(800)
+  expect(playfield.getDropFrequency(1)).toEqual(800)
+  expect(playfield.getDropFrequency(2)).toEqual(700)
+  expect(playfield.getDropFrequency(19)).toEqual(700)
+  expect(playfield.getDropFrequency(25)).toEqual(100)
+  expect(playfield.getDropFrequency(30)).toEqual(50)
+  expect(playfield.getDropFrequency(35)).toEqual(50)
+})
+
+test('Drop frequency increases as level increases', () => {
+  const playfield = new Playfield({
+    cols: 10,
+    rows: 8,
+    firstVisibleRow: 4,
+    levelSpeeds: { 1: 800, 2: 700 },
+  })
+  expect(playfield.getDropFrequency()).toEqual(800)
+  playfield.level++
+  expect(playfield.getDropFrequency()).toEqual(700)
+})
+
+test('Level increases as lines are cleared', () => {
+  const playfield = new Playfield({
+    cols: 10,
+    rows: 8,
+    firstVisibleRow: 4,
+    linesPerLevel: 2,
+  })
+  expect(playfield.level).toEqual(1)
+  playfield.clearLines([7], TSpin.NONE)
+  expect(playfield.level).toEqual(1)
+  playfield.clearLines([7], TSpin.NONE)
+  expect(playfield.level).toEqual(2)
+})
+
 test('Time to next drop is reset after a spawn', () => {
   const playfield = new Playfield({
     cols: 10,
     rows: 8,
     firstVisibleRow: 4,
-    initialDropFrequency: 2000,
+    levelSpeeds: { 1: 2000 },
   })
   playfield.update(500)
-  expect((<any>playfield).nextStep).toEqual(1500)
+  expect(playfield.nextStep).toEqual(1500)
   playfield.spawn()
-  expect((<any>playfield).nextStep).toEqual(2000)
+  expect(playfield.nextStep).toEqual(2000)
 })
 
 test('hardDrop moves tetromino to the bottom and locks it in place', () => {

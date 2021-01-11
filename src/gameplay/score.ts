@@ -13,8 +13,8 @@ class Score extends Events.EventEmitter implements GameStats {
     this.reset()
   }
 
-  reset(): void {
-    this.level = 1
+  reset(level = 1): void {
+    this.level = level
     this.lines = 0
     this.points = 0
     this.combo = false
@@ -24,7 +24,7 @@ class Score extends Events.EventEmitter implements GameStats {
   }
 
   bindPlayfieldEvents(emitter: Events.EventEmitter): void {
-    const { LINES_CLEARED, TSPIN, SOFT_DROP, HARD_DROP } = Playfield.Events
+    const { LINES_CLEARED, TSPIN, SOFT_DROP, HARD_DROP, LEVEL_UPDATED } = Playfield.Events
 
     emitter.on(LINES_CLEARED, (playfield: Playfield, count: number, tSpin: TSpin) => {
       this.clearLines(count, tSpin)
@@ -36,9 +36,10 @@ class Score extends Events.EventEmitter implements GameStats {
     })
     emitter.on(SOFT_DROP, this.softDrop, this)
     emitter.on(HARD_DROP, this.hardDrop, this)
+    emitter.on(LEVEL_UPDATED, this.updateLevel, this)
   }
 
-  setLevel(level: number): void {
+  updateLevel(playfield: Playfield, level: number): void {
     if (this.level !== level) {
       this.level = level
       this.emit(Score.Events.LEVEL_CHANGED, this.level)
@@ -53,7 +54,6 @@ class Score extends Events.EventEmitter implements GameStats {
   increaseLines(value: number): void {
     this.lines += value
     this.emit(Score.Events.LINES_CHANGED, this.lines)
-    this.setLevel(Math.floor(this.lines / Score.Values.LINES_PER_LEVEL) + 1)
   }
 
   softDrop(): void {
@@ -100,7 +100,6 @@ class Score extends Events.EventEmitter implements GameStats {
     TETRIS: 800,
     TSPIN: [0, 100, 400],
     BACK_TO_BACK: 1.5,
-    LINES_PER_LEVEL: 10,
   }
 }
 
