@@ -153,13 +153,14 @@ class Playfield extends Events.EventEmitter {
   }
 
   spawn(shapeId?: ShapeId): void {
-    this.tetromino = new Tetromino(shapeId || this.shapeProvider.next())
-    this.tetromino.moveToSpawnPostion(Math.floor(this.cols / 2), this.firstVisibleRow - 1)
+    const newTetromino = new Tetromino(shapeId || this.shapeProvider.next())
+    newTetromino.moveToSpawnPostion(Math.floor(this.cols / 2), this.firstVisibleRow - 1)
 
     // Game over occurs if the new tetromino is obstructed when spawned
-    if (this.obstructed(this.tetromino.getPositions())) {
+    if (this.obstructed(newTetromino.getPositions())) {
       this.topOut()
     } else {
+      this.tetromino = newTetromino
       // New tetrominoes spawn above the play field then immediately drop below if possible
       this.spawnDrop()
 
@@ -370,7 +371,7 @@ class Playfield extends Events.EventEmitter {
     }
   }
 
-  static Events = {
+  static readonly Events = {
     QUEUE_UPDATED: 'QUEUE_UPDATED',
     HOLD_UPDATED: 'HOLD_UPDATED',
     MATRIX_UPDATED: 'MATRIX_UPDATED',
