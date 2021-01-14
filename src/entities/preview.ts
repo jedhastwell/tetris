@@ -7,8 +7,7 @@ const SLOT_HEIGHT = 144
 const SHAPE_IMAGES = '-IJLOSZT'
 
 class PreviewPanel extends Phaser.GameObjects.Container {
-  shapeObjects: Phaser.GameObjects.Image[]
-  shapeCount: number
+  tetrominos: Phaser.GameObjects.Group
 
   constructor(
     scene: Phaser.Scene,
@@ -38,30 +37,28 @@ class PreviewPanel extends Phaser.GameObjects.Container {
     this.add(footer)
     this.add(title)
 
-    this.shapeObjects = []
-    this.shapeCount = shapeCount
+    this.tetrominos = this.scene.add.group(<Phaser.Types.GameObjects.Group.GroupCreateConfig>{
+      key: 'atlas',
+      frame: 'tetromino-O',
+      repeat: shapeCount,
+      visible: false,
+      'setXY.y': HEADER_BOTTOM + (BLOCK_HEIGHT + SLOT_HEIGHT) * 0.5,
+      'setXY.stepY': SLOT_HEIGHT,
+    })
+    this.add(this.tetrominos.getChildren())
   }
 
   updateShapes(value: ShapeId | ShapeId[] | null): void {
-    if (value) {
-      const shapes = Array.isArray(value) ? value : [value]
+    const tetrominos = <Phaser.GameObjects.Image[]>this.tetrominos.getChildren()
+    const shapes = Array.isArray(value) ? value : [value]
 
-      shapes.forEach((shapeId, i) => {
-        if (i < this.shapeCount) {
-          if (!this.shapeObjects[i]) {
-            const image = this.scene.add.image(0, 0, 'atlas', 'tetromino-O')
-            this.add(image)
-            this.shapeObjects.push(image)
-          }
-          const frame = `tetromino-${SHAPE_IMAGES[shapeId]}`
-          this.shapeObjects[i].setTexture('atlas', frame)
-          this.shapeObjects[i].setPosition(
-            0,
-            HEADER_BOTTOM + BLOCK_HEIGHT * 0.5 + SLOT_HEIGHT * (i + 0.5),
-          )
-        }
-      })
-    }
+    tetrominos.forEach((image, i) => {
+      const shapeId = shapes[i]
+      image.setVisible(!!shapeId)
+      if (!!shapeId) {
+        image.setFrame(`tetromino-${SHAPE_IMAGES[shapeId]}`)
+      }
+    })
   }
 }
 
