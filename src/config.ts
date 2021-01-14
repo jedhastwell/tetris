@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 
-export default {
+const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: 'game',
   backgroundColor: '#7D69DD',
@@ -10,4 +10,9 @@ export default {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
+  audio: {
+    noAudio: true,
+  },
 }
+
+export default config
