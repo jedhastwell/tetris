@@ -47,7 +47,10 @@ export type PlayfieldCommand =
   | 'hold'
 
 export enum SceneNames {
-  PreloadScene = 'PreloadScene',
-  BootScene = 'BootScene',
-  GameScene = 'GameScene',
+  Boot = 'BootScene',
+  Preload = 'PreloadScene',
+  Controller = 'ControllerScene',
+  Ui = 'UiScene',
+  Menu = 'MenuScene',
+  Game = 'GameScene',
 }

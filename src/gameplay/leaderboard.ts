@@ -1,4 +1,5 @@
 import { GameStats } from '../types'
+import { Events } from 'phaser'
 
 interface LeaderboardEntry extends GameStats {
   name: string
@@ -7,11 +8,18 @@ interface LeaderboardEntry extends GameStats {
 
 const StorageKey = 'lb1'
 
-class Leaderboard {
+class Leaderboard extends Events.EventEmitter {
+  static readonly Events = {
+    UPDATED: 'Updated',
+  }
+
   public entries: LeaderboardEntry[]
   private maxEntries: number
 
+  private emitUpdated = (): boolean => this.emit(Leaderboard.Events.UPDATED, this)
+
   constructor(maxEntries: number) {
+    super()
     this.maxEntries = maxEntries
     this.entries = []
   }
@@ -20,6 +28,7 @@ class Leaderboard {
     const storedValue = window.localStorage.getItem(StorageKey)
     if (!!storedValue) {
       this.entries = JSON.parse(storedValue)
+      this.emitUpdated()
     }
   }
 
@@ -47,6 +56,10 @@ class Leaderboard {
     this.entries.splice(i === -1 ? this.entries.length : i, 0, newEntry)
     if (this.entries.length > this.maxEntries) {
       this.entries.pop()
+    }
+
+    if (!dropScore) {
+      this.emitUpdated()
     }
 
     return !dropScore

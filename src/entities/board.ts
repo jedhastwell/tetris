@@ -15,14 +15,17 @@ class Board extends Phaser.GameObjects.Container {
   private matrix: Group
   private ghost: Group
   private tetromino: Group
+  private rows: number
+  private cols: number
+
+  public hideGhost = false
+  public hideTetromino = false
 
   constructor(scene: Phaser.Scene, x: number, y: number, cols: number, rows: number) {
     super(scene, x, y)
 
-    const background = this.scene.add
-      .tileSprite(-2, -2, cols * CELL_SIZE, rows * CELL_SIZE, 'atlas', 'block-background')
-      .setOrigin(0, 0)
-    this.add(background)
+    this.rows = rows
+    this.cols = cols
 
     this.matrix = this.scene.add.group(<any>{
       key: 'atlas',
@@ -60,6 +63,21 @@ class Board extends Phaser.GameObjects.Container {
     this.add(this.tetromino.getChildren())
   }
 
+  animateFill(shape: ShapeId | 0, duration: number, onComplete?: () => void): void {
+    this.matrix.children.iterate((block: Image, i): void => {
+      const delay = (duration / this.rows) * (this.rows - Math.floor(i / this.rows))
+      this.scene.time.delayedCall(delay, () => {
+        block.setVisible(shape !== 0)
+        if (shape !== 0) {
+          block.setFrame(getBlockImage(shape))
+        }
+      })
+    })
+    if (!!onComplete) {
+      this.scene.time.delayedCall(duration, onComplete)
+    }
+  }
+
   updateMatrix(matrix: Matrix): void {
     const blocks = this.matrix.getChildren()
     matrix.forEach((row, r) =>
@@ -74,11 +92,16 @@ class Board extends Phaser.GameObjects.Container {
   }
 
   updateGhost(ghost: Tetromino): void {
-    Board.updateGroup(this.ghost, ghost.getPositions())
+    Board.updateGroup(this.ghost, ghost.getPositions(), this.hideGhost)
   }
 
   updateTetromino(tetromino: Tetromino, timeToLock?: number): void {
-    Board.updateGroup(this.tetromino, tetromino.getPositions(), getBlockImage(tetromino.shapeId))
+    Board.updateGroup(
+      this.tetromino,
+      tetromino.getPositions(),
+      this.hideTetromino,
+      getBlockImage(tetromino.shapeId),
+    )
 
     this.scene.tweens.killTweensOf(this.tetromino.getChildren())
     this.tetromino.setAlpha(1)
@@ -93,13 +116,13 @@ class Board extends Phaser.GameObjects.Container {
     }
   }
 
-  static updateGroup(group: Group, positions: Point[], frame?: string): void {
+  static updateGroup(group: Group, positions: Point[], hidden = false, frame?: string): void {
     positions.forEach((p, i) => {
       const block = <Image>group.getChildren()[i]
-      if (frame) {
+      if (!!frame) {
         block.setFrame(frame)
       }
-      block.setVisible(p.y >= 0)
+      block.setVisible(hidden === false && p.y >= 0)
       block.setPosition(p.x * CELL_SIZE, p.y * CELL_SIZE)
     })
   }

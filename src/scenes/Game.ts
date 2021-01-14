@@ -1,145 +1,62 @@
 import Phaser from 'phaser'
 import Playfield from '../gameplay/playfield'
-import { SceneNames, PlayfieldCommand, TSpin } from '../types'
-import Score from '../gameplay/score'
-import Leaderboard from '../gameplay/leaderboard'
+import { PlayfieldCommand, SceneNames } from '../types'
 import { Settings, Controls } from '../settings'
 import Repeater from '../gameplay/repeater'
-import Preview from '../entities/preview'
-import PreviewPanel from '../entities/preview'
 import Board from '../entities/board'
 
-const PANEL_SPACING = 68
-
-enum GameState {
-  Starting,
-  Playing,
-  Over,
-}
-
 class Game extends Phaser.Scene {
-  private playfield: Playfield
-  private score: Score
-  private leaderboard: Leaderboard
-  private gameState: GameState
-  private nextPanel: PreviewPanel
-  private holdPanel: PreviewPanel
+  private background: Phaser.GameObjects.TileSprite
   private board: Board
-  private scorePanel: Phaser.GameObjects.Image
-  private scoreLabel: Phaser.GameObjects.Text
-  private linesLabel: Phaser.GameObjects.Text
-  private levelLabel: Phaser.GameObjects.Text
-  private highScorePanel: Phaser.GameObjects.Image
-  private highScoreLabel: Phaser.GameObjects.Text
-
-  constructor() {
-    super({ key: SceneNames.GameScene })
-  }
+  private rows: number
+  private cols: number
 
   create(): void {
-    this.playfield = new Playfield({
-      cols: Settings.COLS,
-      rows: Settings.ROWS + Settings.ROW_BUFFER,
-      firstVisibleRow: Settings.ROW_BUFFER,
-      queueSize: Settings.QUEUE_SIZE,
-    })
+    this.cameras.main.setPosition(414, 74)
 
-    this.score = new Score()
-    this.leaderboard = new Leaderboard(Settings.LEADERBOARD_ENTRIES_SAVED)
-    this.leaderboard.load()
+    this.cols = this.gameplay.playfield.cols
+    this.rows = this.gameplay.playfield.rows - this.gameplay.playfield.firstVisibleRow
 
-    // Hold panel
-    this.holdPanel = new Preview(this, 196, 36, 1, 'hold')
-    this.add.existing(this.holdPanel)
-
-    // Score panel
-    this.scorePanel = this.add
-      .image(0, 0, 'atlas', 'score-panel')
-      .setPosition(this.holdPanel.x, this.holdPanel.getBounds().bottom - 96 + PANEL_SPACING)
-      .setOrigin(0.5, 0)
-    this.scoreLabel = this.createLabel(this.scorePanel.x, this.scorePanel.y + 104, '0')
-    this.linesLabel = this.createLabel(this.scorePanel.x, this.scorePanel.y + 224, '0')
-    this.levelLabel = this.createLabel(this.scorePanel.x, this.scorePanel.y + 344, '1')
-
-    // High score panel
-    this.highScorePanel = this.add
-      .image(0, 0, 'atlas', 'high-score-panel')
-      .setPosition(this.scorePanel.x, this.scorePanel.getBounds().bottom - 96 + PANEL_SPACING)
-      .setOrigin(0.5, 0)
-      .setVisible(this.leaderboard.hasEntries())
-
-    const highScore = this.leaderboard.getHighScore().toLocaleString()
-    this.highScoreLabel = this.createLabel(0, 0, highScore, { textAlign: 'right' })
-      .setPosition(this.highScorePanel.x + 96, this.highScorePanel.y + 24)
-      .setOrigin(1, 0)
-      .setVisible(this.leaderboard.hasEntries())
-
-    // Board background
-    const boardPanel = this.add
-      .image(0, 0, 'atlas', 'grid-panel')
-      .setPosition(this.holdPanel.getBounds().right - 96 + PANEL_SPACING, 36)
-      .setOrigin(0, 0)
+    // Background
+    this.background = this.add
+      .tileSprite(
+        -2,
+        this.rows * 68 - 2,
+        this.cols * 68,
+        this.rows * 68,
+        'atlas',
+        'block-background',
+      )
+      .setOrigin(0, 1)
 
     // Board display
-    this.board = new Board(this, boardPanel.x + 62, 36 + 38, 10, 20)
+    this.board = new Board(this, 0, 0, this.cols, this.rows)
     this.add.existing(this.board)
-
-    // Next Panel
-    this.nextPanel = new Preview(this, 0, 36, Settings.QUEUE_SIZE, 'next')
-    this.nextPanel.setX(
-      boardPanel.getBounds().right - 96 + PANEL_SPACING + this.nextPanel.getBounds().width / 2,
-    )
-    this.add.existing(this.nextPanel)
 
     this.assignControls()
     this.bindEvents()
-    this.start(Settings.START_DELAY)
-  }
-
-  createLabel(
-    x: number,
-    y: number,
-    text: string,
-    styles?: Record<string, any>,
-  ): Phaser.GameObjects.Text {
-    const fontStyles = {
-      fontFamily: 'Rubik, sans-serif',
-      fontStyle: 'bold',
-      fontSize: '28px',
-      ...styles,
-    }
-    const label = this.add.text(x, y, text, fontStyles).setOrigin(0.5, 0)
-    return label
   }
 
   bindEvents(): void {
-    this.score.bindPlayfieldEvents(this.playfield)
-    this.score.on(Score.Events.POINTS_CHANGED, (points: number) =>
-      this.scoreLabel.setText(points.toLocaleString()),
-    )
-    this.score.on(Score.Events.LINES_CHANGED, (lines: number) =>
-      this.linesLabel.setText(lines.toLocaleString()),
-    )
-    this.score.on(Score.Events.LEVEL_CHANGED, (level: number) => {
-      this.levelLabel.setText(level.toLocaleString())
-    })
-    this.playfield.on(Playfield.Events.QUEUE_UPDATED, this.updatePreview, this)
-    this.playfield.on(Playfield.Events.HOLD_UPDATED, this.updateHold, this)
-    this.playfield.on(Playfield.Events.MATRIX_UPDATED, this.updateMatrix, this)
-    this.playfield.on(Playfield.Events.TETROMINO_UPDATED, this.updateTetromino, this)
-    this.playfield.on(Playfield.Events.TOPPED_OUT, this.gameOver, this)
-    this.playfield.on(
-      Playfield.Events.TSPIN,
-      (playfield: Playfield, tSpin: TSpin, linesCleared: number) => {
-        console.log('Performed T-Splin', tSpin, linesCleared)
-      },
-    )
+    this.events.on(Phaser.Scenes.Events.TRANSITION_START, this.transitionIn, this)
+    this.events.on(Phaser.Scenes.Events.TRANSITION_WAKE, this.transitionIn, this)
+    this.events.on(Phaser.Scenes.Events.TRANSITION_OUT, this.transitionOut, this)
+    this.gameplay.playfield.on(Playfield.Events.MATRIX_UPDATED, this.updateMatrix, this)
+    this.gameplay.playfield.on(Playfield.Events.TETROMINO_UPDATED, this.updateTetromino, this)
+    this.gameplay.playfield.on(Playfield.Events.TOPPED_OUT, this.gameOver, this)
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.unbindEvents, this)
   }
 
-  handlePlayfieldInput(command: PlayfieldCommand): void {
-    if (this.gameState === GameState.Playing) {
-      this.playfield[command]()
-    }
+  unbindEvents(): void {
+    this.events.off(Phaser.Scenes.Events.TRANSITION_START, this.transitionIn, this)
+    this.events.off(Phaser.Scenes.Events.TRANSITION_WAKE, this.transitionIn, this)
+    this.events.off(Phaser.Scenes.Events.TRANSITION_OUT, this.transitionOut, this)
+    this.events.off(Phaser.Scenes.Events.UPDATE, this.updatePlayfield, this)
+    this.gameplay.playfield.off(Playfield.Events.MATRIX_UPDATED, this.updateMatrix, this)
+    this.gameplay.playfield.off(Playfield.Events.TETROMINO_UPDATED, this.updateTetromino, this)
+    this.gameplay.playfield.off(Playfield.Events.TOPPED_OUT, this.gameOver, this)
+    this.input.keyboard.removeAllKeys()
+    this.time.removeAllEvents()
   }
 
   assignControls(): void {
@@ -149,34 +66,50 @@ class Game extends Phaser.Scene {
 
         if (['moveLeft', 'moveRight', 'softDrop'].includes(command)) {
           const repeater = new Repeater(this, {
-            callback: () => this.handlePlayfieldInput(command),
+            callback: () => this.gameplay.playfield[command](),
             repeatDelay: Settings.REPEAT_DELAY,
             repeatSpeed: Settings.REPEAT_SPEED,
           })
-
           key.on('down', repeater.start, repeater)
           key.on('up', repeater.stop, repeater)
         } else {
-          key.on('down', () => this.handlePlayfieldInput(command), this)
+          key.on('down', () => this.gameplay.playfield[command](), this)
         }
       })
     })
   }
 
-  start(delay: number): void {
-    this.gameState = GameState.Starting
-    this.time.delayedCall(delay, () => {
-      this.playfield.reset()
-      this.gameState = GameState.Playing
+  setPlaying(value: boolean): void {
+    this.board.hideTetromino = !value
+    this.board.hideGhost = !value
+    this.input.enabled = value
+    this.events.off(Phaser.Scenes.Events.UPDATE, this.updatePlayfield, this)
+    if (value) {
+      this.events.on(Phaser.Scenes.Events.UPDATE, this.updatePlayfield, this)
+      this.updateTetromino(this.gameplay.playfield, false)
+    }
+  }
+
+  gameOver(): void {
+    this.setPlaying(false)
+
+    this.gameplay.leaderboard.submit(this.gameplay.score, '', Date.now())
+    this.gameplay.leaderboard.save()
+
+    this.board.animateFill(this.gameplay.playfield.getTetromino().shapeId, 800)
+    this.time.delayedCall(1500, () => {
+      this.scene.transition({
+        target: SceneNames.Menu,
+        duration: 250,
+        remove: false,
+        sleep: true,
+      })
+      this.scene.bringToTop(SceneNames.Game)
     })
   }
 
-  updateHold(playfield: Playfield): void {
-    this.holdPanel.updateShapes(playfield.held)
-  }
-
-  updatePreview(playfield: Playfield): void {
-    this.nextPanel.updateShapes(playfield.queue)
+  updatePlayfield(time: number, delta: number): void {
+    this.gameplay.playfield.update(delta)
   }
 
   updateTetromino(playfield: Playfield, willLock: boolean): void {
@@ -193,20 +126,29 @@ class Game extends Phaser.Scene {
     this.board.updateMatrix(matrix)
   }
 
-  gameOver(): void {
-    this.gameState = GameState.Over
+  transitionIn(fromScene: Phaser.Scene, duration: number): void {
+    this.setPlaying(false)
+    this.tweens.killTweensOf(this.cameras.main)
+    this.cameras.main.setAlpha(1)
 
-    this.leaderboard.submit(this.score, '', Date.now())
-    this.leaderboard.save()
-    this.highScorePanel.setVisible(true)
-    this.highScoreLabel.setVisible(true)
-    this.highScoreLabel.setText(this.leaderboard.getHighScore().toLocaleString())
+    const targetHeight = this.background.height
+    this.background.height = 0
+    this.tweens.add({
+      targets: this.background,
+      height: targetHeight,
+      duration: duration,
+      ease: (t: number): number => Math.round(t * this.rows) / this.rows,
+      completeDelay: Settings.START_DELAY,
+      onComplete: () => this.setPlaying(true),
+    })
   }
 
-  update(time: number, delta: number): void {
-    if (this.gameState === GameState.Playing) {
-      this.playfield.update(delta)
-    }
+  transitionOut(fromScene: Phaser.Scene, duration: number): void {
+    this.add.tween({
+      targets: this.cameras.main,
+      alpha: 0,
+      duration: duration,
+    })
   }
 }
 
