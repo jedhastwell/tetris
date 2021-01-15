@@ -34,7 +34,7 @@ class Tetromino {
 
   moveToSpawnPostion(x: number, y: number): this {
     this.x = x - Math.ceil(Shapes[this.shapeId][0].length / 2)
-    this.y = y - 1
+    this.y = y - (this.shapeId === ShapeId.I ? 2 : 1)
     return this
   }
 

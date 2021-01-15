@@ -65,7 +65,7 @@ test('moveToSpawnPostion moves I shape to expected location', () => {
   const tetromino = new Tetromino(ShapeId.I)
   tetromino.moveToSpawnPostion(5, 0)
   expect(tetromino.x).toEqual(2)
-  expect(tetromino.y).toEqual(-1)
+  expect(tetromino.y).toEqual(-2)
 })
 
 test('moveToSpawnPostion moves L shape to expected location', () => {
