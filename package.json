@@ -1,7 +1,7 @@
 {
   "name": "tetris",
   "version": "0.1.0",
-  "description": "A boilerplate project for creating games with Phaser3, Typescript and Webpack 5",
+  "description": "A tetris clone",
   "main": "index.js",
   "scripts": {
     "dev": "webpack --mode development --env development",

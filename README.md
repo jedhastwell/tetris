@@ -1,6 +1,8 @@
-# phaser3-typescript-webpack-boilerplate
+# Tetris
 
-A boilerplate project for creating games with Phaser3, Typescript and Webpack 5.
+My own implementation of the classic Tetris, made just for fun.
+
+Still a work in progress...
 
 ## Setup
 
