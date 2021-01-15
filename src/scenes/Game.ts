@@ -86,7 +86,6 @@ class Game extends Phaser.Scene {
     this.events.off(Phaser.Scenes.Events.UPDATE, this.updatePlayfield, this)
     if (value) {
       this.events.on(Phaser.Scenes.Events.UPDATE, this.updatePlayfield, this)
-      this.updateTetromino(this.gameplay.playfield, false)
     }
   }
 
@@ -139,7 +138,11 @@ class Game extends Phaser.Scene {
       duration: duration,
       ease: (t: number): number => Math.round(t * this.rows) / this.rows,
       completeDelay: Settings.START_DELAY,
-      onComplete: () => this.setPlaying(true),
+      onComplete: () => {
+        this.setPlaying(true)
+        // Hack: This is here so the first shape is displayed in the queue during start delay. Can surely be done cleaner.
+        this.gameplay.playfield.spawnFromQueue()
+      },
     })
   }
 
