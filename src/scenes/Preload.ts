@@ -1,5 +1,4 @@
 import Phaser from 'phaser'
-import WebFont from '../loaders/web-font'
 import UiScene from './Ui'
 import MenuScene from './Menu'
 import { SceneNames } from '../types'
@@ -11,7 +10,7 @@ class Preload extends Phaser.Scene {
   preload(): void {
     this.logo = this.add.image(this.scale.width / 2, this.scale.height / 2, 'logo')
 
-    this.load.addFile(new WebFont(this.load, { google: { families: ['Rubik:700'] } }))
+    this.load.webFont({ google: { families: ['Rubik:700'] } })
     this.load.atlas('atlas', 'assets/atlas.png', 'assets/atlas.json')
 
     this.time.delayedCall(500, this.ready, undefined, this)

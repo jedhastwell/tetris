@@ -6,6 +6,7 @@ import UiScene from './scenes/Ui'
 import GameScene from './scenes/Game'
 import MenuScene from './scenes/Menu'
 import GameplayPlugin from './plugins/gameplay'
+import WebFontLoaderPlugin from './plugins/web-font'
 import { SceneNames } from './types'
 
 class Game extends Phaser.Game {
@@ -13,6 +14,7 @@ class Game extends Phaser.Game {
     super(config)
 
     this.plugins.install(GameplayPlugin.KEY, GameplayPlugin, true, GameplayPlugin.KEY)
+    this.plugins.install(WebFontLoaderPlugin.KEY, WebFontLoaderPlugin, true)
 
     this.scene.add(SceneNames.Boot, BootScene)
     this.scene.add(SceneNames.Preload, PreloadScene)
