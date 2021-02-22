@@ -4,6 +4,8 @@ My own implementation of the classic Tetris, made just for fun.
 
 Still a work in progress...
 
+Available to play at: https://super-tetris.netlify.app/
+
 ## Setup
 
 ### Environment
