@@ -9,11 +9,17 @@ Available to play at: https://super-tetris.netlify.app/
 ### Keyboard Controls
 
 Move Left: Left Arrow, A
+
 Move Right: Right Arrow, D
+
 Soft Drop: Down Arrow, S
+
 Hard Drop: Space
+
 Rotate Left: Z
+
 Rotate Right: Up Arrow, X, W
+
 Hold: C
 
 ## Setup
