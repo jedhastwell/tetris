@@ -2,9 +2,19 @@
 
 My own implementation of the classic Tetris, made just for fun.
 
-Still a work in progress...
+Currently desktop only and still a work in progress...
 
 Available to play at: https://super-tetris.netlify.app/
+
+### Keyboard Controls
+
+Move Left: Left Arrow, A
+Move Right: Right Arrow, D
+Soft Drop: Down Arrow, S
+Hard Drop: Space
+Rotate Left: Z
+Rotate Right: Up Arrow, X, W
+Hold: C
 
 ## Setup
 
