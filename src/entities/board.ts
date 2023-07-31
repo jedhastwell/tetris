@@ -40,8 +40,8 @@ class Board extends Phaser.GameObjects.Container {
       height: rows,
       cellWidth: CELL_SIZE,
       cellHeight: CELL_SIZE,
-      x: CELL_SIZE / 2,
-      y: CELL_SIZE / 2,
+      x: 0,
+      y: 0,
     })
 
     this.ghost = this.scene.add.group(<any>{
