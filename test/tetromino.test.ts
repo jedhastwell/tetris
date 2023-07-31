@@ -1,5 +1,5 @@
 import Tetromino from '../src/gameplay/tetromino'
-import { Orientation, ShapeId } from '../src/types'
+import { ShapeId } from '../src/types'
 
 test('getMatrix returns expected ouput for I shape', () => {
   const matrix = Tetromino.getMatrix(ShapeId.I)
