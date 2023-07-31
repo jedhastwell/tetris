@@ -22,12 +22,12 @@ class PreviewPanel extends Phaser.GameObjects.Container {
     const header = this.scene.add.image(0, 0, 'atlas', 'preview-panel-top')
     header.setOrigin(0.5, 0)
 
-    const { x: fillX, y: fillY } = header.getBottomCenter()
+    const { x: fillX, y: fillY } = header.getBottomCenter<Phaser.Math.Vector2>()
     const fill = this.scene.add.image(fillX, fillY, 'atlas', 'preview-panel-fill')
     fill.displayHeight = BLOCK_HEIGHT * 0.5 + SLOT_HEIGHT * shapeCount
     fill.setOrigin(0.5, 0)
 
-    const { x: footerX, y: footerY } = fill.getBottomCenter()
+    const { x: footerX, y: footerY } = fill.getBottomCenter<Phaser.Math.Vector2>()
     const footer = this.scene.add.image(footerX, footerY, 'atlas', 'preview-panel-bottom')
     footer.setOrigin(0.5, 0)
 
