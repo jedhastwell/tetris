@@ -26,12 +26,12 @@ test('clone correctly copies matrix content', () => {
   const matrix = Matrix.clone([
     [1, 2, 3],
     [4, 5, 6],
-    [7, 8, 9],
+    [7, 1, 2],
   ])
   expect(matrix).toEqual([
     [1, 2, 3],
     [4, 5, 6],
-    [7, 8, 9],
+    [7, 1, 2],
   ])
 })
 

@@ -1,20 +1,30 @@
-import { PlayfieldCommand } from './types'
+import { PlayfieldCommand, GameCommand } from './types'
 
 export interface ControlSettings {
   Keys: {
-    [key in PlayfieldCommand]: string[]
+    Playfield: {
+      [key in PlayfieldCommand]: string[]
+    }
+    Game: {
+      [key in GameCommand]: string[]
+    }
   }
 }
 
 export const Controls: ControlSettings = {
   Keys: {
-    moveLeft: ['LEFT', 'A'],
-    moveRight: ['RIGHT', 'D'],
-    softDrop: ['DOWN', 'S'],
-    hardDrop: ['SPACE'],
-    rotateLeft: ['Z'],
-    rotateRight: ['UP', 'X', 'W'],
-    hold: ['C'],
+    Playfield: {
+      moveLeft: ['LEFT', 'A'],
+      moveRight: ['RIGHT', 'D'],
+      softDrop: ['DOWN', 'S'],
+      hardDrop: ['SPACE'],
+      rotateLeft: ['Z'],
+      rotateRight: ['UP', 'X', 'W'],
+      hold: ['C'],
+    },
+    Game: {
+      pause: ['ESC', 'P'],
+    },
   },
 }
 

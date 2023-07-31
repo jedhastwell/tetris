@@ -46,6 +46,8 @@ export type PlayfieldCommand =
   | 'rotateRight'
   | 'hold'
 
+export type GameCommand = 'pause'
+
 export enum SceneNames {
   Boot = 'BootScene',
   Preload = 'PreloadScene',
@@ -53,4 +55,5 @@ export enum SceneNames {
   Ui = 'UiScene',
   Menu = 'MenuScene',
   Game = 'GameScene',
+  Pause = 'Pause',
 }
