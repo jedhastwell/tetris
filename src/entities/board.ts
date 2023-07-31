@@ -27,7 +27,7 @@ class Board extends Phaser.GameObjects.Container {
     this.rows = rows
     this.cols = cols
 
-    this.matrix = this.scene.add.group(<any>{
+    this.matrix = this.scene.add.group({
       key: 'atlas',
       frame: 'block-empty',
       visible: false,
@@ -40,11 +40,11 @@ class Board extends Phaser.GameObjects.Container {
       height: rows,
       cellWidth: CELL_SIZE,
       cellHeight: CELL_SIZE,
-      x: CELL_SIZE / 2,
-      y: CELL_SIZE / 2,
+      x: 0,
+      y: 0,
     })
 
-    this.ghost = this.scene.add.group(<any>{
+    this.ghost = this.scene.add.group({
       key: 'atlas',
       frame: 'block-ghost',
       repeat: 3,
@@ -53,7 +53,7 @@ class Board extends Phaser.GameObjects.Container {
     })
     this.add(this.ghost.getChildren())
 
-    this.tetromino = this.scene.add.group(<any>{
+    this.tetromino = this.scene.add.group({
       key: 'atlas',
       frame: 'block-O',
       repeat: 3,
@@ -64,7 +64,7 @@ class Board extends Phaser.GameObjects.Container {
   }
 
   animateFill(shape: ShapeId | 0, duration: number, onComplete?: () => void): void {
-    this.matrix.children.iterate((block: Image, i): void => {
+    this.matrix.children.iterate((block: Image, i) => {
       const delay = (duration / this.rows) * (this.rows - Math.floor(i / this.rows))
       this.scene.time.delayedCall(delay, () => {
         block.setVisible(shape !== 0)
@@ -72,6 +72,7 @@ class Board extends Phaser.GameObjects.Container {
           block.setFrame(getBlockImage(shape))
         }
       })
+      return true
     })
     if (!!onComplete) {
       this.scene.time.delayedCall(duration, onComplete)

@@ -55,25 +55,27 @@ class Game extends Phaser.Scene {
     this.gameplay.playfield.off(Playfield.Events.MATRIX_UPDATED, this.updateMatrix, this)
     this.gameplay.playfield.off(Playfield.Events.TETROMINO_UPDATED, this.updateTetromino, this)
     this.gameplay.playfield.off(Playfield.Events.TOPPED_OUT, this.gameOver, this)
-    this.input.keyboard.removeAllKeys()
+    this.input.keyboard?.removeAllKeys()
     this.time.removeAllEvents()
   }
 
   assignControls(): void {
     Object.keys(Controls.Keys).forEach((command: PlayfieldCommand) => {
       Controls.Keys[command].forEach((keyName) => {
-        const key = this.input.keyboard.addKey(keyName, true)
+        if (this.input.keyboard) {
+          const key = this.input.keyboard.addKey(keyName, true)
 
-        if (['moveLeft', 'moveRight', 'softDrop'].includes(command)) {
-          const repeater = new Repeater(this, {
-            callback: () => this.gameplay.playfield[command](),
-            repeatDelay: Settings.REPEAT_DELAY,
-            repeatSpeed: Settings.REPEAT_SPEED,
-          })
-          key.on('down', repeater.start, repeater)
-          key.on('up', repeater.stop, repeater)
-        } else {
-          key.on('down', () => this.gameplay.playfield[command](), this)
+          if (['moveLeft', 'moveRight', 'softDrop'].includes(command)) {
+            const repeater = new Repeater(this, {
+              callback: () => this.gameplay.playfield[command](),
+              repeatDelay: Settings.REPEAT_DELAY,
+              repeatSpeed: Settings.REPEAT_SPEED,
+            })
+            key.on('down', repeater.start, repeater)
+            key.on('up', repeater.stop, repeater)
+          } else {
+            key.on('down', () => this.gameplay.playfield[command](), this)
+          }
         }
       })
     })
