@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import Playfield from '../gameplay/playfield'
-import { PlayfieldCommand, SceneNames } from '../types'
+import { PlayfieldCommand, SceneNames, GameCommand } from '../types'
 import { Settings, Controls } from '../settings'
 import Repeater from '../gameplay/repeater'
 import Board from '../entities/board'
@@ -60,25 +60,42 @@ class Game extends Phaser.Scene {
   }
 
   assignControls(): void {
-    Object.keys(Controls.Keys).forEach((command: PlayfieldCommand) => {
-      Controls.Keys[command].forEach((keyName) => {
+    for (const [command, keys] of Object.entries(Controls.Keys.Playfield)) {
+      keys.forEach((keyName) => {
         if (this.input.keyboard) {
           const key = this.input.keyboard.addKey(keyName, true)
 
           if (['moveLeft', 'moveRight', 'softDrop'].includes(command)) {
             const repeater = new Repeater(this, {
-              callback: () => this.gameplay.playfield[command](),
+              callback: () => this.gameplay.playfield[command as PlayfieldCommand](),
               repeatDelay: Settings.REPEAT_DELAY,
               repeatSpeed: Settings.REPEAT_SPEED,
             })
             key.on('down', repeater.start, repeater)
             key.on('up', repeater.stop, repeater)
+            this.events.on(Phaser.Scenes.Events.PAUSE, repeater.stop, repeater)
           } else {
-            key.on('down', () => this.gameplay.playfield[command](), this)
+            key.on('down', () => this.gameplay.playfield[command as PlayfieldCommand](), this)
           }
         }
       })
-    })
+    }
+
+    for (const [command, keys] of Object.entries(Controls.Keys.Game)) {
+      keys.forEach((keyName) => {
+        if (this.input.keyboard) {
+          const key = this.input.keyboard.addKey(keyName, true)
+          key.on('down', () => this[command as GameCommand](), this)
+        }
+      })
+    }
+  }
+
+  pause(): void {
+    this.input.enabled = false
+    this.scene.run(SceneNames.Pause)
+    this.scene.pause(SceneNames.Game)
+    this.scene.bringToTop(SceneNames.Pause)
   }
 
   setPlaying(value: boolean): void {

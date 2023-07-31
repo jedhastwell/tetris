@@ -22,6 +22,8 @@ Rotate Right: Up Arrow, X, W
 
 Hold: C
 
+Pause / Unpause: Escape, P
+
 ## Setup
 
 ### Environment
